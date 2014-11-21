@@ -22,17 +22,6 @@ import scala.language.experimental.macros
 import scala.reflect.macros.whitebox
 import scala.util.Try
 
-object tag {
-  def apply[U] = new Tagger[U]
-
-  trait Tagged[U]
-  type @@[+T, U] = T with Tagged[U]
-
-  class Tagger[U] {
-    def apply[T](t : T) : T @@ U = t.asInstanceOf[T @@ U]
-  }
-}
-
 object newtype {
   /**
    * Creates a value of the newtype given a value of its representation type.
