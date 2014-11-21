@@ -37,7 +37,7 @@ object ShapelessBuild extends Build {
   lazy val shapeless = Project(
     id = "shapeless", 
     base = file("."),
-    aggregate = Seq(shapelessCore, shapelessExamples),
+    aggregate = Seq(shapelessBootstrap, shapelessCore, shapelessExamples),
     settings = commonSettings ++ Seq(
       moduleName := "shapeless-root",
         
@@ -49,10 +49,59 @@ object ShapelessBuild extends Build {
     )
   )
 
+  lazy val shapelessBootstrap =
+    Project(
+      id = "shapeless-bootstrap",
+      base = file("bootstrap"),
+      settings = commonSettings ++ Publishing.settings ++ osgiSettings ++ buildInfoSettings ++ releaseSettings ++ Seq(
+        moduleName := "shapeless-bootstrap",
+
+        managedSourceDirectories in Test := Nil,
+
+        libraryDependencies ++= Seq(
+          "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
+          "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided"
+        ),
+
+        (sourceGenerators in Compile) <+= buildInfo,
+
+        initialCommands in console := """import shapeless._""",
+
+        OsgiKeys.exportPackage := Seq("shapeless.*;version=${Bundle-Version}"),
+        OsgiKeys.importPackage := Seq("""scala.*;version="$<range;[==,=+);$<@>>""""),
+        OsgiKeys.additionalHeaders := Map("-removeheaders" -> "Include-Resource,Private-Package"),
+
+        buildInfoPackage := "shapeless_bootstrap",
+        buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion),
+        buildInfoKeys ++= Seq[BuildInfoKey](
+          version,
+          scalaVersion,
+          gitHeadCommit,
+          BuildInfoKey.action("buildTime") {
+            System.currentTimeMillis
+          }
+        ),
+
+        releaseProcess := Seq[ReleaseStep](
+          checkSnapshotDependencies,
+          inquireVersions,
+          runTest,
+          setReleaseVersion,
+          commitReleaseVersion,
+          tagRelease,
+          publishSignedArtifacts,
+          setNextVersion,
+          commitNextVersion,
+          pushChanges
+        )
+      )
+    )
+
   lazy val shapelessCore =
     Project(
       id = "shapeless-core", 
       base = file("core"),
+      dependencies = Seq(shapelessBootstrap),
       settings = commonSettings ++ Publishing.settings ++ osgiSettings ++ buildInfoSettings ++ releaseSettings ++ Seq(
         moduleName := "shapeless",
         
