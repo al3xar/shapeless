@@ -20,23 +20,6 @@ import scala.language.experimental.macros
 
 import scala.reflect.macros.whitebox
 
-object labelled {
-  /**
-   * The type of fields with keys of singleton type `K` and value type `V`.
-   */
-  type FieldType[K, +V] = V with KeyTag[K, V]
-  trait KeyTag[K, +V]
-
-  /**
-   * Yields a result encoding the supplied value with the singleton type `K' of its key.
-   */
-  def field[K] = new FieldBuilder[K]
-
-  class FieldBuilder[K] {
-    def apply[V](v : V): FieldType[K, V] = v.asInstanceOf[FieldType[K, V]]
-  }
-}
-
 trait DefaultSymbolicLabelling[T] extends DepFn0 with Serializable { type Out <: HList }
 
 object DefaultSymbolicLabelling {
@@ -82,7 +65,7 @@ trait FieldOf[V] {
   def ->>(v: V): FieldType[this.type, V] = field[this.type](v)
 }
 
-class LabelledMacros(val c: whitebox.Context) extends SingletonTypeUtils with CaseClassMacros {
+class LabelledMacros(val c: whitebox.Context) extends bootstrap.SingletonTypeUtils with CaseClassMacros {
   import labelled._
   import c.universe._
 

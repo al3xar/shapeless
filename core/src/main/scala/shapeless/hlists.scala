@@ -148,7 +148,7 @@ trait SingletonProductArgs extends Dynamic {
   def applyDynamic(method: String)(args: Any*): Any = macro ProductMacros.forwardSingletonImpl
 }
 
-class ProductMacros(val c: whitebox.Context) extends SingletonTypeUtils {
+class ProductMacros(val c: whitebox.Context) extends bootstrap.SingletonTypeUtils with ReprTypes {
   import c.universe._
   import internal.constantType
 

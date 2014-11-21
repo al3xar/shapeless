@@ -20,10 +20,10 @@ package syntax
 import scala.language.experimental.macros
 
 object singleton {
-  implicit def mkSingletonOps(t: Any): SingletonOps = macro SingletonTypeMacros.mkSingletonOps
+  implicit def mkSingletonOps(t: Any): SingletonOps = macro bootstrap.SingletonTypeMacros.mkSingletonOps
 
   import tag._
-  implicit def narrowSymbol[S <: String](t: Symbol): Symbol @@ S = macro SingletonTypeMacros.narrowSymbol[S]
+  implicit def narrowSymbol[S <: String](t: Symbol): Symbol @@ S = macro bootstrap.SingletonTypeMacros.narrowSymbol[S]
 }
 
 trait SingletonOps {

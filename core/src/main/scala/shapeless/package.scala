@@ -108,6 +108,18 @@ package object shapeless {
   def everywhere(f: Poly): EverywhereAux[f.type] {} = new EverywhereAux[f.type]
 
   def cachedImplicit[T]: T = macro CachedImplicitMacros.cachedImplicitImpl[T]
+
+  implicit val witness0: Witness.Aux[_0] =
+    new Witness {
+      type T = _0
+      val value = Nat._0
+    }
+
+  implicit def witnessN[P <: Nat]: Witness.Aux[Succ[P]] =
+    new Witness {
+      type T = Succ[P]
+      val value = new Succ[P]()
+    }
 }
 
 package shapeless {

@@ -333,7 +333,7 @@ object TypeCase {
   }
 }
 
-class TypeableMacros(val c: blackbox.Context) extends SingletonTypeUtils {
+class TypeableMacros(val c: blackbox.Context) extends bootstrap.SingletonTypeUtils {
   import c.universe._
   import internal._
 
