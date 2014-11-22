@@ -176,15 +176,15 @@ object tuple {
    *
    * @author Miles Sabin
    */
-  trait Filter[T, U] extends DepFn1[T]
+  trait FilterType[T, U] extends DepFn1[T]
 
-  object Filter {
-    def apply[T, U](implicit filter: Filter[T, U]): Aux[T, U, filter.Out] = filter
+  object FilterType {
+    def apply[T, U](implicit filter: FilterType[T, U]): Aux[T, U, filter.Out] = filter
 
-    type Aux[T, U, Out0] = Filter[T, U] { type Out = Out0 }
+    type Aux[T, U, Out0] = FilterType[T, U] { type Out = Out0 }
 
     implicit def filterTuple[T, L1 <: HList, U, L2 <: HList]
-      (implicit gen: Generic.Aux[T, L1], filter: hl.Filter.Aux[L1, U, L2], tp: hl.Tupler[L2]): Aux[T, U, tp.Out] = new Filter[T, U] {
+      (implicit gen: Generic.Aux[T, L1], filter: hl.FilterType.Aux[L1, U, L2], tp: hl.Tupler[L2]): Aux[T, U, tp.Out] = new FilterType[T, U] {
         type Out = tp.Out
         def apply(t: T): Out = tp(filter(gen.to(t)))
       }
@@ -195,15 +195,15 @@ object tuple {
    *
    * @author Miles Sabin
    */
-  trait FilterNot[T, U] extends DepFn1[T]
+  trait FilterNotType[T, U] extends DepFn1[T]
 
-  object FilterNot {
-    def apply[T, U](implicit filter: FilterNot[T, U]): Aux[T, U, filter.Out] = filter
+  object FilterNotType {
+    def apply[T, U](implicit filter: FilterNotType[T, U]): Aux[T, U, filter.Out] = filter
 
-    type Aux[T, U, Out0] = FilterNot[T, U] { type Out = Out0 }
+    type Aux[T, U, Out0] = FilterNotType[T, U] { type Out = Out0 }
 
     implicit def filterNotTuple[T, L1 <: HList, U, L2 <: HList]
-      (implicit gen: Generic.Aux[T, L1], filterNot: hl.FilterNot.Aux[L1, U, L2], tp: hl.Tupler[L2]): Aux[T, U, tp.Out] = new FilterNot[T, U] {
+      (implicit gen: Generic.Aux[T, L1], filterNot: hl.FilterNotType.Aux[L1, U, L2], tp: hl.Tupler[L2]): Aux[T, U, tp.Out] = new FilterNotType[T, U] {
         type Out = tp.Out
         def apply(t: T): Out = tp(filterNot(gen.to(t)))
       }

@@ -612,12 +612,12 @@ class HListTests {
     val fruits : Apple :: Pear :: Fruit :: HNil = a :: p :: f :: HNil
     typed[Fruit :: Fruit :: Fruit :: HNil](fruits.unifySubtypes[Fruit])
     typed[Apple :: Pear :: Fruit :: HNil](fruits.unifySubtypes[Apple])
-    assertEquals(a :: p :: f :: HNil, fruits.unifySubtypes[Fruit].filter[Fruit])
+    assertEquals(a :: p :: f :: HNil, fruits.unifySubtypes[Fruit].filterType[Fruit])
 
     val stuff : Apple :: String :: Pear :: HNil = a :: "foo" :: p :: HNil
     typed[Fruit :: String :: Fruit :: HNil](stuff.unifySubtypes[Fruit])
-    assertEquals(HNil, stuff.filter[Fruit])
-    assertEquals(a :: p :: HNil, stuff.unifySubtypes[Fruit].filter[Fruit])
+    assertEquals(HNil, stuff.filterType[Fruit])
+    assertEquals(a :: p :: HNil, stuff.unifySubtypes[Fruit].filterType[Fruit])
   }
 
   @Test
@@ -1210,29 +1210,29 @@ class HListTests {
   }
 
   @Test
-  def testFilter {
+  def testFilterType {
     val l1 = 1 :: 2 :: HNil
-    val f1 = l1.filter[Int]
+    val f1 = l1.filterType[Int]
     assertTypedEquals[Int :: Int :: HNil](1 :: 2 :: HNil, f1)
 
     val l2 = 1 :: true :: "foo" :: 2 :: HNil
-    val f2 = l2.filter[Int]
+    val f2 = l2.filterType[Int]
     assertTypedEquals[Int :: Int :: HNil](1 :: 2 :: HNil, f2)
 
-    typed[HNil](l2.filter[Double])
+    typed[HNil](l2.filterType[Double])
   }
 
   @Test
-  def testFilterNot {
+  def testFilterNotType {
     val l1 = 1 :: 2 :: HNil
-    val f1 = l1.filterNot[String]
+    val f1 = l1.filterNotType[String]
     assertTypedEquals[Int :: Int :: HNil](1 :: 2 :: HNil, f1)
 
     val l2 = 1 :: true :: "foo" :: 2 :: HNil
-    val f2 = l2.filterNot[String]
+    val f2 = l2.filterNotType[String]
     assertTypedEquals[Int :: Boolean :: Int :: HNil](1 :: true :: 2 :: HNil, f2)
 
-    typed[HNil](l2.filter[Double])
+    typed[HNil](l2.filterType[Double])
   }
 
   @Test

@@ -122,12 +122,12 @@ final class TupleOps[T](t: T) {
   /**
    * Returns all elements of type `U` of this tuple. An explicit type argument must be provided.
    */
-  def filter[U](implicit filter: Filter[T, U]): filter.Out = filter(t)
+  def filterType[U](implicit filter: FilterType[T, U]): filter.Out = filter(t)
 
   /**
    * Returns all elements of type different than `U` of this tuple. An explicit type argument must be provided.
    */
-  def filterNot[U](implicit filterNot: FilterNot[T, U]): filterNot.Out = filterNot(t)
+  def filterNotType[U](implicit filterNot: FilterNotType[T, U]): filterNot.Out = filterNot(t)
   
   /**
    * Returns the first element of type `U` of this tuple plus the remainder of the tuple. An explicit type argument
