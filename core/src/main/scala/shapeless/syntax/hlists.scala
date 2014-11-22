@@ -119,12 +119,12 @@ final class HListOps[L <: HList](l : L) extends Serializable {
   /**
    * Returns all elements of type `U` of this `HList`. An explicit type argument must be provided.
    */
-  def filter[U](implicit partition : Partition[L, U]) : partition.Prefix  = partition.filter(l)
+  def filterType[U](implicit filterType : FilterType[L, U]) : filterType.Out  = filterType(l)
 
   /**
    * Returns all elements of type different than `U` of this `HList`. An explicit type argument must be provided.
    */
-  def filterNot[U](implicit partition : Partition[L, U]) : partition.Suffix  = partition.filterNot(l)
+  def filterNotType[U](implicit filterType : FilterNotType[L, U]) : filterType.Out  = filterType(l)
 
   def partition[U](implicit partition: Partition[L, U]): (partition.Prefix, partition.Suffix) = partition(l)
 

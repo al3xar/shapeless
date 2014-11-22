@@ -372,11 +372,11 @@ class SerializationTests {
     assertSerializable(Partition[HNil, Int])
     assertSerializable(Partition[L, Int])
 
-    assertSerializable(Filter[HNil, Int])
-    assertSerializable(Filter[L, Int])
+    assertSerializable(FilterType[HNil, Int])
+    assertSerializable(FilterType[L, Int])
 
-    assertSerializable(FilterNot[HNil, Int])
-    assertSerializable(FilterNot[L, Int])
+    assertSerializable(FilterNotType[HNil, Int])
+    assertSerializable(FilterNotType[L, Int])
 
     assertSerializable(Remove[L, Int])
 
@@ -711,11 +711,11 @@ class SerializationTests {
     assertSerializable(Selector[L, Int])
     assertSerializable(Selector[L, String])
 
-    assertSerializable(Filter[Unit, Int])
-    assertSerializable(Filter[L, Int])
+    assertSerializable(FilterType[Unit, Int])
+    assertSerializable(FilterType[L, Int])
 
-    assertSerializable(FilterNot[Unit, Int])
-    assertSerializable(FilterNot[L, Int])
+    assertSerializable(FilterNotType[Unit, Int])
+    assertSerializable(FilterNotType[L, Int])
 
     assertSerializable(Remove[L, Int])
 

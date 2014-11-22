@@ -29,7 +29,7 @@ package shapeless.examples
  */
 object UniquenessExample extends App {
   import shapeless._
-  import ops.hlist.Filter
+  import ops.hlist.FilterType
 
   /**
    * We'll enrich `HList` with a `unique` method that takes a type parameter,
@@ -38,7 +38,7 @@ object UniquenessExample extends App {
    * not occur exactly once in the list.
    */
   implicit class Uniqueable[L <: HList](l: L) {
-    def unique[A](implicit ev: Filter.Aux[L, A, A :: HNil]) = ev(l).head
+    def unique[A](implicit ev: FilterType.Aux[L, A, A :: HNil]) = ev(l).head
   }
 
   // A simple type hierarchy for demonstration purposes.

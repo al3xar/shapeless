@@ -817,20 +817,32 @@ object hlist {
    *
    * @author Alois Cochard
    */
-  trait Filter[L <: HList, U] extends DepFn1[L] with Serializable { type Out <: HList }
+  trait FilterType[L <: HList, U] extends DepFn1[L] with Serializable { type Out <: HList }
 
-  object Filter {
-    def apply[L <: HList, U](implicit filter: Filter[L, U]): Aux[L, U, filter.Out] = filter
+  object FilterType {
+    def apply[L <: HList, U](implicit filterType: FilterType[L, U]): Aux[L, U, filterType.Out] = filterType
 
-    type Aux[L <: HList, U, Out0 <: HList] = Filter[L, U] { type Out = Out0 }
+    type Aux[L <: HList, U, Out0 <: HList] = FilterType[L, U] { type Out = Out0 }
 
-    implicit def hlistFilter[L <: HList, U, LPrefix <: HList, LSuffix <: HList](
-      implicit partition: Partition.Aux[L, U, LPrefix, LSuffix]
-    ): Aux[L, U, LPrefix] = new Filter[L, U] {
-      type Out = LPrefix
+    implicit def hnilFilterType[L <: HList, U]: Aux[HNil, U, HNil] =
+      new FilterType[HNil, U] {
+        type Out = HNil
+        def apply(l : HNil): Out = HNil
+      }
 
-      def apply(l: L): Out = partition.filter(l)
-    }
+    implicit def hconsFilterTypeKept[L <: HList, H]
+      (implicit f : FilterType[L, H]): Aux[H :: L, H, H :: f.Out] =
+        new FilterType[H :: L, H] {
+          type Out = H :: f.Out
+          def apply(l : H :: L) : Out = l.head :: f(l.tail)
+        }
+
+    implicit def hconsFilterTypeRemoved[H, L <: HList, U]
+      (implicit f : FilterType[L, U], e : U =:!= H): Aux[H :: L, U, f.Out] =
+        new FilterType[H :: L, U] {
+          type Out = f.Out
+          def apply(l : H :: L): Out = f(l.tail)
+        }
   }
 
   /**
@@ -838,20 +850,32 @@ object hlist {
    *
    * @author Alois Cochard
    */
-  trait FilterNot[L <: HList, U] extends DepFn1[L] with Serializable { type Out <: HList }
+  trait FilterNotType[L <: HList, U] extends DepFn1[L] with Serializable { type Out <: HList }
 
-  object FilterNot {
-    def apply[L <: HList, U](implicit filter: FilterNot[L, U]): Aux[L, U, filter.Out] = filter
+  object FilterNotType {
+    def apply[L <: HList, U](implicit filterNotType: FilterNotType[L, U]): Aux[L, U, filterNotType.Out] = filterNotType
 
-    type Aux[L <: HList, U, Out0 <: HList] = FilterNot[L, U] { type Out = Out0 }
+    type Aux[L <: HList, U, Out0 <: HList] = FilterNotType[L, U] { type Out = Out0 }
 
-    implicit def hlistFilterNot[L <: HList, U, LPrefix <: HList, LSuffix <: HList](
-      implicit partition: Partition.Aux[L, U, LPrefix, LSuffix]
-    ): Aux[L, U, LSuffix] = new FilterNot[L, U] {
-      type Out = LSuffix
+    implicit def hnilFilterNotType[L <: HList, U]: Aux[HNil, U, HNil] =
+      new FilterNotType[HNil, U] {
+        type Out = HNil
+        def apply(l : HNil): Out = HNil
+      }
 
-      def apply(l: L): Out = partition.filterNot(l)
-    }
+    implicit def hconsFilterNotTypeRemoved[L <: HList, H]
+      (implicit f: FilterNotType[L, H]): Aux[H :: L, H, f.Out] =
+        new FilterNotType[H :: L, H] {
+          type Out = f.Out
+          def apply(l : H :: L): Out = f(l.tail)
+        }
+
+    implicit def hconsFilterNotTypeKept[H, L <: HList, U, Out <: HList]
+      (implicit f: FilterNotType[L, U], e: U =:!= H): Aux[H :: L, U, H :: f.Out] =
+        new FilterNotType[H :: L, U] {
+          type Out = H :: f.Out
+          def apply(l : H :: L): Out = l.head :: f(l.tail)
+        }
   }
 
   /**
