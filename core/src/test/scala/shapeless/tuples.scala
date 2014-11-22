@@ -436,12 +436,12 @@ class TupleTests {
     val fruits : (Apple, Pear, Fruit) = (a, p, f)
     typed[(Fruit, Fruit, Fruit)](fruits.unifySubtypes[Fruit])
     typed[(Apple, Pear, Fruit)](fruits.unifySubtypes[Apple])
-    assertEquals((a, p, f), fruits.unifySubtypes[Fruit].filter[Fruit])
+    assertEquals((a, p, f), fruits.unifySubtypes[Fruit].filterType[Fruit])
 
     val stuff : (Apple, String, Pear) = (a, "foo", p)
     typed[(Fruit, String, Fruit)](stuff.unifySubtypes[Fruit])
-    assertEquals((), stuff.filter[Fruit])
-    assertEquals((a, p), stuff.unifySubtypes[Fruit].filter[Fruit])
+    assertEquals((), stuff.filterType[Fruit])
+    assertEquals((a, p), stuff.unifySubtypes[Fruit].filterType[Fruit])
   }
 
   @Test
@@ -938,33 +938,33 @@ class TupleTests {
   }
 
   @Test
-  def testFilter {
+  def testFilterType {
     val l1 = (1, 2)
-    val f1 = l1.filter[Int]
+    val f1 = l1.filterType[Int]
     typed[(Int, Int)](f1)
     assertEquals((1, 2), f1)
 
     val l2 = (1, true, "foo", 2)
-    val f2 = l2.filter[Int]
+    val f2 = l2.filterType[Int]
     typed[(Int, Int)](f2)
     assertEquals((1, 2), f2)
 
-    typed[Unit](l2.filter[Double])
+    typed[Unit](l2.filterType[Double])
   }
 
   @Test
-  def testFilterNot {
+  def testFilterNotType {
     val l1 = (1, 2)
-    val f1 = l1.filterNot[String]
+    val f1 = l1.filterNotType[String]
     typed[(Int, Int)](f1)
     assertEquals((1, 2), f1)
 
     val l2 = (1, true, "foo", 2)
-    val f2 = l2.filterNot[String]
+    val f2 = l2.filterNotType[String]
     typed[(Int, Boolean, Int)](f2)
     assertEquals((1, true, 2), f2)
 
-    typed[Unit](l1.filterNot[Int])
+    typed[Unit](l1.filterNotType[Int])
   }
 
   @Test
