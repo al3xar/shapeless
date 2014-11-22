@@ -55,6 +55,8 @@ final class UnionOps[C <: Coproduct](c : C) extends Serializable {
    */
   def values(implicit values: Values[C]): values.Out = values(c)
 
+  def filterKeys(f: Poly)(implicit filterKeys: FilterKeys[f.type, C]): filterKeys.Out = filterKeys(c)
+
   /**
    * Returns a `Coproduct` made of the key-value pairs of this union.
    */
