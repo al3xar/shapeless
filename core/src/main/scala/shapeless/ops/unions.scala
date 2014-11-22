@@ -198,4 +198,51 @@ object union {
         }
       }
   }
+
+  /**
+   * Type class supporting filtering a union with a higher ranked function returning Boolean literals 
+   * at the union keys.
+   *
+   * @author Alexandre Archambault
+   */
+  trait FilterKeys[HF, U <: Coproduct] extends DepFn1[U] {
+    type Filtered <: Coproduct
+    type Out = Option[Filtered]
+  }
+
+  object FilterKeys {
+    def apply[HF, U <: Coproduct](implicit filterKeys: FilterKeys[HF, U]): Aux[HF, U, filterKeys.Filtered] = filterKeys
+
+    type Aux[HF, U <: Coproduct, Filtered0 <: Coproduct] = FilterKeys[HF, U] { type Filtered = Filtered0 }
+
+    implicit def cnilFilterKeys[HF]: Aux[HF, CNil, CNil] =
+      new FilterKeys[HF, CNil] {
+        type Filtered = CNil
+        def apply(c: CNil) = None
+      }
+
+    implicit def cconsFilterKeysTrue[HF, K, V, T <: Coproduct](implicit
+      hc: Case1.Aux[HF, K, True],
+      tailFilterKeys: FilterKeys[HF, T]
+    ): Aux[HF, FieldType[K, V] :+: T, FieldType[K, V] :+: tailFilterKeys.Filtered] =
+      new FilterKeys[HF, FieldType[K, V] :+: T] {
+        type Filtered = FieldType[K, V] :+: tailFilterKeys.Filtered
+        def apply(c: FieldType[K, V] :+: T) = c match {
+          case Inl(h) => Some(Inl(h))
+          case Inr(t) => tailFilterKeys(t).map(Inr(_))
+        }
+      }
+
+    implicit def cconsFilterKeysFalse[HF, K, V, T <: Coproduct](implicit
+      hc: Case1.Aux[HF, K, False],
+      tailFilterKeys: FilterKeys[HF, T]
+    ): Aux[HF, FieldType[K, V] :+: T, tailFilterKeys.Filtered] =
+      new FilterKeys[HF, FieldType[K, V] :+: T] {
+        type Filtered = tailFilterKeys.Filtered
+        def apply(c: FieldType[K, V] :+: T) = c match {
+          case Inl(h) => None
+          case Inr(t) => tailFilterKeys(t)
+        }
+      }
+  }
 }

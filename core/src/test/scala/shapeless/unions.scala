@@ -227,4 +227,32 @@ class UnionTests {
       assertTypedEquals[U](Coproduct[U]("baz" ->> 2.0), r3)
     }
   }
+
+  val iSymbolWitness = Witness('i)
+  val sSymbolWitness = Witness('s)
+  val bSymbolWitness = Witness('b)
+
+  object filter extends FieldPoly {
+    implicit def i = at[iSymbolWitness.T](_ => True)
+    implicit def s = at[sSymbolWitness.T](_ => False)
+    implicit def b = at[bSymbolWitness.T](_ => True)
+  }
+
+  @Test
+  def testFilterKeys {
+    type U = Union.`'i -> Int, 's -> String, 'b -> Boolean`.T
+    type R = Union.`'i -> Int, 'b -> Boolean`.T
+
+    val u1 = Union[U](i = 23)
+    val u2 = Union[U](s = "foo")
+    val u3 = Union[U](b = true)
+    
+    val r1 = u1.filterKeys(filter)
+    val r2 = u2.filterKeys(filter)
+    val r3 = u3.filterKeys(filter)
+    
+    assertTypedEquals[Option[R]](Some(Union[R](i = 23)), r1)
+    assertTypedEquals[Option[R]](None, r2)
+    assertTypedEquals[Option[R]](Some(Union[R](b = true)), r3)
+  }
 }

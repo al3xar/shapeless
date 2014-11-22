@@ -55,6 +55,8 @@ final class UnionOps[C <: Coproduct](c : C) {
    */
   def values(implicit values: Values[C]): values.Out = values(c)
 
+  def filterKeys(f: Poly)(implicit filterKeys: FilterKeys[f.type, C]): filterKeys.Out = filterKeys(c)
+
   /**
    * Returns a `Map` whose keys and values are typed as the Lub of the keys
    * and values of this union.
