@@ -99,6 +99,8 @@ final class RecordOps[L <: HList](l : L) extends Serializable {
    */
   def values(implicit values: Values[L]): values.Out = values(l)
 
+  def filterKeys(f: Poly)(implicit filterKeys: FilterKeys[f.type, L]): filterKeys.Out = filterKeys(l)
+
   /**
    * Returns a `HList` made of the key-value pairs of this record.
    */
