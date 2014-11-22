@@ -740,4 +740,31 @@ class RecordTests {
       assertEquals(2.0, v3, Double.MinPositiveValue)
     }
   }
+
+  val iSymbolWitness = Witness('i)
+  val sSymbolWitness = Witness('s)
+  val bSymbolWitness = Witness('b)
+  
+  object filter extends FieldPoly {
+    implicit def i = at[iSymbolWitness.T](_ => True)
+    implicit def s = at[sSymbolWitness.T](_ => False)
+    implicit def b = at[bSymbolWitness.T](_ => True)
+  }
+  
+  @Test
+  def testFilterKeys {
+    {
+      val r = HNil
+      val fr = r.filterKeys(filter)
+      assertTypedEquals(HNil, fr)
+    }
+    
+    {
+      val r = Record(i = 23, s = "foo", b = true)
+      val fr = r.filterKeys(filter)
+
+      val expected = Record(i = 23, b = true)
+      assertTypedEquals[Record.`'i -> Int, 'b -> Boolean`.T](expected, fr)
+    }
+  }
 }

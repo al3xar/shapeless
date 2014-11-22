@@ -99,6 +99,8 @@ final class RecordOps[L <: HList](l : L) {
    */
   def values(implicit values: Values[L]): values.Out = values(l)
 
+  def filterKeys(f: Poly)(implicit filterKeys: FilterKeys[f.type, L]): filterKeys.Out = filterKeys(l)
+
   /**
    * Returns a `Map` whose keys and values are typed as the Lub of the keys
    * and values of this record.
