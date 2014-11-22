@@ -17,6 +17,8 @@
 package shapeless
 package ops
 
+import poly._
+
 //object record {
 //  Ideally this would be an object rather than a package, however that appears
 //  to trip bugs in implicit resolution which manifest in the use of WitnessWith
@@ -266,5 +268,44 @@ package record {
         type Out = V :: vt.Out
         def apply(l: FieldType[K, V] :: T): Out = (l.head: V) :: vt(l.tail)
       }
+  }
+
+  /**
+   * Type class supporting filtering a record with a higher ranked function returning Boolean literals 
+   * at the record keys.
+   *
+   * @author Alexandre Archambault
+   */
+  trait FilterKeys[HF, L <: HList] extends DepFn1[L] { type Out <: HList }
+
+  object FilterKeys {
+    def apply[HF, L <: HList, Out0 <: HList](implicit filterKeys: FilterKeys[HF, L]): Aux[HF, L, filterKeys.Out] =
+      filterKeys
+
+    type Aux[HF, L <: HList, Out0 <: HList] = FilterKeys[HF, L] { type Out = Out0 }
+
+    implicit def filterKeysHNil[HF, L <: HNil]: Aux[HF, L, HNil] =
+      new FilterKeys[HF, L] {
+        type Out = HNil
+        def apply(l: L) = HNil
+      }
+
+    implicit def filterKeysHConsTrue[HF, K, V, T <: HList](implicit
+      hc: Case1.Aux[HF, K, True],
+      filterKeysTail: FilterKeys[HF, T]
+    ): Aux[HF, FieldType[K, V] :: T, FieldType[K, V] :: filterKeysTail.Out] =
+        new FilterKeys[HF, FieldType[K, V] :: T] {
+          type Out = FieldType[K, V] :: filterKeysTail.Out
+          def apply(l: FieldType[K, V] :: T) = l.head :: filterKeysTail(l.tail)
+        }
+
+    implicit def filterKeysHConsFalse[HF, K, V, T <: HList](implicit
+      hc: Case1.Aux[HF, K, False],
+      filterKeysTail: FilterKeys[HF, T]
+    ): Aux[HF, FieldType[K, V] :: T, filterKeysTail.Out] =
+        new FilterKeys[HF, FieldType[K, V] :: T] {
+          type Out = filterKeysTail.Out
+          def apply(l: FieldType[K, V] :: T) = filterKeysTail(l.tail)
+        }
   }
 }
