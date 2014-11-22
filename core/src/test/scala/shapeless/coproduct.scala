@@ -938,39 +938,39 @@ class CoproductTests {
     val isdi2: I :+: S :+: D :+: I :+: CNil =
       Inr[I, S :+: D :+: I :+: CNil](Coproduct[S :+: D :+: I :+: CNil](2))
 
-    val r1 = in1.filter[I]
+    val r1 = in1.filterType[I]
     assertTypedEquals[Option[I :+: CNil]](Some(in1), r1)
 
-    val r2 = in2.filter[I]
+    val r2 = in2.filterType[I]
     assertTypedEquals[Option[I :+: CNil]](Some(in1), r2)
 
-    val r3 = in3.filter[I]
+    val r3 = in3.filterType[I]
     assertTypedEquals[Option[I :+: CNil]](Some(in1), r3)
 
 
-    val r4 = in2.filter[S]
+    val r4 = in2.filterType[S]
     assertTypedEquals[Option[S :+: CNil]](None, r4)
 
-    val r5 = in3.filter[S]
+    val r5 = in3.filterType[S]
     assertTypedEquals[Option[S :+: CNil]](None, r5)
 
-    val r6 = in3.filter[D]
+    val r6 = in3.filterType[D]
     assertTypedEquals[Option[D :+: CNil]](None, r6)
 
 
-    val r7 = in1.filter[C]
+    val r7 = in1.filterType[C]
     assertTypedEquals[Option[CNil]](None, r7)
 
-    val r8 = in2.filter[C]
+    val r8 = in2.filterType[C]
     assertTypedEquals[Option[CNil]](None, r8)
 
-    val r9 = in3.filter[C]
+    val r9 = in3.filterType[C]
     assertTypedEquals[Option[CNil]](None, r9)
 
-    val r10 = isdi1.filter[I]
+    val r10 = isdi1.filterType[I]
     assertTypedEquals[Option[I :+: I :+: CNil]](Some(Inl[I, I :+: CNil](1)), r10)
 
-    val r11 = isdi2.filter[I]
+    val r11 = isdi2.filterType[I]
     assertTypedEquals[Option[I :+: I :+: CNil]](Some(Inr[I, I :+: CNil](Inl[I, CNil](2))), r11)
   }
 
@@ -985,41 +985,41 @@ class CoproductTests {
     val isdi2: I :+: S :+: D :+: I :+: CNil =
       Inr[I, S :+: D :+: I :+: CNil](Coproduct[S :+: D :+: I :+: CNil](2))
 
-    val r1 = i.filterNot[I]
+    val r1 = i.filterNotType[I]
     assertTypedEquals[Option[CNil]](None, r1)
-    val r2 = is.filterNot[I]
+    val r2 = is.filterNotType[I]
     assertTypedEquals[Option[S :+: CNil]](None, r2)
-    val r3 = isd.filterNot[I]
+    val r3 = isd.filterNotType[I]
     assertTypedEquals[Option[S :+: D :+: CNil]](None, r3)
 
 
-    val r4 = i.filterNot[S]
+    val r4 = i.filterNotType[S]
     assertTypedEquals[Option[I :+: CNil]](Some(i), r4)
-    val r5 = is.filterNot[S]
+    val r5 = is.filterNotType[S]
     assertTypedEquals[Option[I :+: CNil]](Some(i), r5)
-    val r6 = isd.filterNot[S]
+    val r6 = isd.filterNotType[S]
     assertTypedEquals[Option[I :+: D :+: CNil]](Some(Coproduct[I :+: D :+: CNil](1)), r6)
 
 
-    val r7 = i.filterNot[D]
+    val r7 = i.filterNotType[D]
     assertTypedEquals[Option[I :+: CNil]](Some(i), r7)
-    val r8 = is.filterNot[D]
+    val r8 = is.filterNotType[D]
     assertTypedEquals[Option[I :+: S :+: CNil]](Some(is), r8)
-    val r9 = isd.filterNot[D]
+    val r9 = isd.filterNotType[D]
     assertTypedEquals[Option[I :+: S :+: CNil]](Some(is), r9)
 
 
-    val r10 = i.filterNot[C]
+    val r10 = i.filterNotType[C]
     assertTypedEquals[Option[I :+: CNil]](Some(i), r10)
-    val r11 = is.filterNot[C]
+    val r11 = is.filterNotType[C]
     assertTypedEquals[Option[I :+: S :+: CNil]](Some(is), r11)
-    val r12 = isd.filterNot[C]
+    val r12 = isd.filterNotType[C]
     assertTypedEquals[Option[I :+: S :+: D :+: CNil]](Some(isd), r12)
 
 
-    val r13 = isdi1.filterNot[I]
+    val r13 = isdi1.filterNotType[I]
     assertTypedEquals[Option[S :+: D :+: CNil]](None, r13)
-    val r14 = isdi2.filterNot[I]
+    val r14 = isdi2.filterNotType[I]
     assertTypedEquals[Option[S :+: D :+: CNil]](None, r14)
   }
 

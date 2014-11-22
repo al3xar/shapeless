@@ -70,12 +70,12 @@ final class CoproductOps[C <: Coproduct](c: C) {
   /**
    * Returns all elements of type `U` of this `Coproduct`. An explicit type argument must be provided.
    */
-  def filter[U](implicit filter: Filter[C, U]): Option[filter.A]  = filter(c)
+  def filterType[U](implicit filterType: FilterType[C, U]): Option[filterType.A]  = filterType(c)
 
   /**
    * Returns all elements of type different than `U` of this `Coproduct`. An explicit type argument must be provided.
    */
-  def filterNot[U](implicit filterNot: FilterNot[C, U]): Option[filterNot.A] = filterNot(c)
+  def filterNotType[U](implicit filterNotType: FilterNotType[C, U]): Option[filterNotType.A] = filterNotType(c)
 
   /**
    * Returns the first element of type `U` of this `Coproduct` plus the remainder of the `Coproduct`.
