@@ -48,6 +48,12 @@ object Witness {
       type T = Succ[P]
       val value = new Succ[P]()
     }
+  
+  object Boolean {
+    val witnessTrue = Witness(true)
+    val witnessFalse = Witness(false)
+  }
+
 }
 
 object Literal extends Dynamic {
