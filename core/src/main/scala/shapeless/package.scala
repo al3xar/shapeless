@@ -107,6 +107,11 @@ package object shapeless {
 
   def everywhere(f: Poly): EverywhereAux[f.type] {} = new EverywhereAux[f.type]
 
+  type True = Witness.`true`.T
+  type False = Witness.`false`.T
+  val True: True = true
+  val False: False = false
+
   def cachedImplicit[T]: T = macro CachedImplicitMacros.cachedImplicitImpl[T]
 
   implicit val witness0: Witness.Aux[_0] =
