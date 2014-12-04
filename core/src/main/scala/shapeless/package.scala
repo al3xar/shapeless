@@ -102,4 +102,10 @@ package object shapeless {
   type Everywhere[F <: Poly, T] = Case1[EverywhereAux[F], T]
 
   def everywhere(f: Poly): EverywhereAux[f.type] {} = new EverywhereAux[f.type]
+
+  type True = Witness.Boolean.witnessTrue.T
+  type False = Witness.Boolean.witnessFalse.T
+  val True: True = Witness.Boolean.witnessTrue.value
+  val False: False = Witness.Boolean.witnessFalse.value
+
 }
