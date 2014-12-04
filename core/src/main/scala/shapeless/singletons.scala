@@ -54,6 +54,10 @@ object Literal extends Dynamic {
   def selectDynamic(tpeSelector: String): Any = macro LabelledMacros.literalTypeImpl
 }
 
+object Literals extends Dynamic {
+  def selectDynamic(tpeSelector: String): Any = macro LabelledMacros.literalsTypeImpl
+}
+
 trait WitnessWith[TC[_]] extends Witness {
   val instance: TC[T]
 }
