@@ -751,6 +751,82 @@ object hlist {
   }
 
   /**
+   * Type class supporting filtering a `HList` with a higher function returning Boolean literals
+   * at the `HList` elements.
+   * 
+   * @author Alexandre Archambault
+   */
+  trait Filter[HF, L <: HList] extends DepFn1[L] { type Out <: HList }
+  
+  object Filter {
+    def apply[HF, L <: HList](implicit filter: Filter[HF, L]): Aux[HF, L, filter.Out] = filter
+    
+    type Aux[HF, L <: HList, Out0 <: HList] = Filter[HF, L] { type Out = Out0 }
+    
+    implicit def hnilFilter[HF, L <: HNil]: Aux[HF, L, L] =
+      new Filter[HF, L] {
+        type Out = L
+        def apply(l: L) = l
+      }
+    
+    implicit def hconsFilterKept[HF, H, T <: HList](implicit
+      hc: Case1.Aux[HF, H, True],
+      tailFilter: Filter[HF, T]
+    ): Aux[HF, H :: T, H :: tailFilter.Out] =
+      new Filter[HF, H :: T] {
+        type Out = H :: tailFilter.Out
+        def apply(l: H :: T) = l.head :: tailFilter(l.tail)
+      }
+
+    implicit def hconsFilterRemoved[HF, H, T <: HList](implicit
+      hc: Case1.Aux[HF, H, False],
+      tailFilter: Filter[HF, T]
+    ): Aux[HF, H :: T, tailFilter.Out] =
+      new Filter[HF, H :: T] {
+        type Out = tailFilter.Out
+        def apply(l: H :: T) = tailFilter(l.tail)
+      }
+  }
+
+  /**
+   * Type class supporting filtering a `HList` with a higher function returning Boolean literals
+   * at the `HList` elements.
+   *
+   * @author Alexandre Archambault
+   */
+  trait FilterNot[HF, L <: HList] extends DepFn1[L] { type Out <: HList }
+
+  object FilterNot {
+    def apply[HF, L <: HList](implicit filterNot: FilterNot[HF, L]): Aux[HF, L, filterNot.Out] = filterNot
+
+    type Aux[HF, L <: HList, Out0 <: HList] = FilterNot[HF, L] { type Out = Out0 }
+
+    implicit def hnilFilterNot[HF, L <: HNil]: Aux[HF, L, L] =
+      new FilterNot[HF, L] {
+        type Out = L
+        def apply(l: L) = l
+      }
+
+    implicit def hconsFilterNotKept[HF, H, T <: HList](implicit
+      hc: Case1.Aux[HF, H, False],
+      tailFilterNot: FilterNot[HF, T]
+    ): Aux[HF, H :: T, H :: tailFilterNot.Out] =
+      new FilterNot[HF, H :: T] {
+        type Out = H :: tailFilterNot.Out
+        def apply(l: H :: T) = l.head :: tailFilterNot(l.tail)
+      }
+
+    implicit def hconsFilterNotRemoved[HF, H, T <: HList](implicit
+      hc: Case1.Aux[HF, H, True],
+      tailFilterNot: FilterNot[HF, T]
+    ): Aux[HF, H :: T, tailFilterNot.Out] =
+      new FilterNot[HF, H :: T] {
+        type Out = tailFilterNot.Out
+        def apply(l: H :: T) = tailFilterNot(l.tail)
+      }
+  }
+
+  /**
    * Type class supporting access to the all elements of this `HList` of type `U`.
    *
    * @author Alois Cochard

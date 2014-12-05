@@ -116,6 +116,12 @@ final class HListOps[L <: HList](l : L) {
    */
   def select[U](implicit selector : Selector[L, U]) : U = selector(l)
 
+  // ...
+  def filter(f: Poly)(implicit filter : Filter[f.type, L]) : filter.Out  = filter(l)
+  
+  // ...
+  def filterNot(f: Poly)(implicit filterNot : FilterNot[f.type, L]) : filterNot.Out  = filterNot(l)
+
   /**
    * Returns all elements of type `U` of this `HList`. An explicit type argument must be provided.
    */
