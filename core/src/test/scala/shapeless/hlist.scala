@@ -1250,6 +1250,59 @@ class HListTests {
   }
 
   @Test
+  def testFilter {
+    {
+      import ops.nat.LTEq.<=
+      import ops.nat.LT.<
+
+      object atLeastTwo extends Poly1 {
+        implicit def upToOne[N <: Nat](implicit ev: N < nat._2) = at[N](_ => False)
+        implicit def fromTwo[N <: Nat](implicit ev: nat._2 <= N) = at[N](_ => True)
+      }
+
+      val l = Nat(1) :: Nat(2) :: HNil
+      val filtered = l.filter(atLeastTwo)
+      assertTypedEquals[nat._2 :: HNil](Nat(2) :: HNil, filtered)
+    }
+    
+    {
+      object intOrString extends Poly1 {
+        implicit def caseBoolean = at[Boolean](_ => False)
+        implicit def caseInt = at[Int](_ => True)
+        implicit def caseString = at[String](_ => True)
+      }
+      
+      val l = 1 :: true :: "foo" :: 2 :: HNil
+      val filtered = l.filterNot(intOrString)
+      assertTypedEquals[Boolean :: HNil](true :: HNil, filtered)
+    }
+    
+    {
+      object onlyAtInt extends Poly1 {
+        implicit def atInt = at[Int](_ => True)
+      }
+
+      val l = 1 :: true :: "foo" :: 2 :: HNil
+      illTyped(""" val filtered = l.filter(onlyAtInt) """)
+    }
+  }
+
+  @Test
+  def testFilterNot {
+    // ...
+    
+    val l1 = 1 :: 2 :: HNil
+    val f1 = l1.filterNotType[String]
+    assertTypedEquals[Int :: Int :: HNil](1 :: 2 :: HNil, f1)
+
+    val l2 = 1 :: true :: "foo" :: 2 :: HNil
+    val f2 = l2.filterNotType[String]
+    assertTypedEquals[Int :: Boolean :: Int :: HNil](1 :: true :: 2 :: HNil, f2)
+
+    typed[HNil](l2.filterType[Double])
+  }
+
+  @Test
   def testFilterType {
     val l1 = 1 :: 2 :: HNil
     val f1 = l1.filterType[Int]

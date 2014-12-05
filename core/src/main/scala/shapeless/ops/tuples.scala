@@ -172,6 +172,46 @@ object tuple {
   }
 
   /**
+   * Type class supporting filtering a tuple with a higher function returning Boolean literals
+   * at the tuple elements.
+   *
+   * @author Alexandre Archambault
+   */
+  trait Filter[HF, T] extends DepFn1[T]
+
+  object Filter {
+    def apply[HF, T](implicit filter: Filter[HF, T]): Aux[HF, T, filter.Out] = filter
+
+    type Aux[HF, T, Out0] = Filter[HF, T] { type Out = Out0 }
+
+    implicit def filterTuple[HF, T, L1 <: HList, L2 <: HList]
+      (implicit gen: Generic.Aux[T, L1], filter: hl.Filter.Aux[HF, L1, L2], tp: hl.Tupler[L2]): Aux[HF, T, tp.Out] = new Filter[HF, T] {
+        type Out = tp.Out
+        def apply(t: T): Out = tp(filter(gen.to(t)))
+      }
+  }
+
+  /**
+   * Type class supporting filtering a tuple with a higher function returning Boolean literals
+   * at the tuple elements.
+   *
+   * @author Alexandre Archambault
+   */
+  trait FilterNot[HF, T] extends DepFn1[T]
+
+  object FilterNot {
+    def apply[HF, T](implicit filterNot: FilterNot[HF, T]): Aux[HF, T, filterNot.Out] = filterNot
+
+    type Aux[HF, T, Out0] = FilterNot[HF, T] { type Out = Out0 }
+
+    implicit def filterNotTuple[HF, T, L1 <: HList, L2 <: HList]
+     (implicit gen: Generic.Aux[T, L1], filterNot: hl.FilterNot.Aux[HF, L1, L2], tp: hl.Tupler[L2]): Aux[HF, T, tp.Out] = new FilterNot[HF, T] {
+       type Out = tp.Out
+       def apply(t: T): Out = tp(filterNot(gen.to(t)))
+     }
+  }
+
+  /**
    * Type class supporting access to the all elements of this tuple of type `U`.
    *
    * @author Miles Sabin
