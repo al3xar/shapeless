@@ -119,6 +119,12 @@ final class TupleOps[T](t: T) {
    */
   def select[U](implicit selector: Selector[T, U]): selector.Out = selector(t)
 
+  // ...
+  def filter(f: Poly)(implicit filter : Filter[f.type, T]) : filter.Out  = filter(t)
+
+  // ...
+  def filterNot(f: Poly)(implicit filterNot : FilterNot[f.type, T]) : filterNot.Out  = filterNot(t)
+
   /**
    * Returns all elements of type `U` of this tuple. An explicit type argument must be provided.
    */
