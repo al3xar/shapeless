@@ -214,7 +214,6 @@ class SingletonTypesTests {
 
     val sFooBar = literalsShow('foo.narrow :: 'bar.narrow :: HNil)
     assertEquals("'foo, 'bar", sFooBar)
->>>>>>> 94d10e9... Added Literals selectDynamic macro
   }
 
   @Test
