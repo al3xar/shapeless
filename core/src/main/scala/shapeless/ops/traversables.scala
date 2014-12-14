@@ -39,7 +39,7 @@ object traversable {
 
     import syntax.typeable._
 
-    implicit def hnilFromTraversable[T] = new FromTraversable[HNil] {
+    implicit def hnilFromTraversable = new FromTraversable[HNil] {
       def apply(l : GenTraversable[_]) =
         if(l.isEmpty) Some(HNil) else None 
     }
