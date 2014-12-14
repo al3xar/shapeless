@@ -19,8 +19,6 @@ import scala.language.experimental.macros
 import scala.reflect.macros.whitebox
 
 package object shapeless {
-  def unexpected : Nothing = sys.error("Unexpected invocation")
-
   // Basic definitions
   type Id[+T] = T
   type Const[C] = {
