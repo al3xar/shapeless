@@ -40,7 +40,7 @@ object IsGeneric {
 trait IsLabelledGeneric[T] extends IsGeneric[T]
 
 object IsLabelledGeneric {
-  type Aux[T, Repr0] = IsLabelledGeneric[T]{ type Repr = Repr0 }
+  type Aux[T, Repr0] = IsLabelledGeneric[T] { type Repr = Repr0 }
 
   def apply[T](implicit lgen: IsLabelledGeneric[T]): Aux[T, lgen.Repr] = lgen
 
@@ -52,7 +52,7 @@ object IsLabelledGeneric {
 trait IsNonLabelledGeneric[T] extends IsGeneric[T]
 
 object IsNonLabelledGeneric {
-  type Aux[T, Repr0] = IsNonLabelledGeneric[T]{ type Repr = Repr0 }
+  type Aux[T, Repr0] = IsNonLabelledGeneric[T] { type Repr = Repr0 }
 
   def apply[T](implicit gen: IsNonLabelledGeneric[T]): Aux[T, gen.Repr] = gen
 
@@ -64,7 +64,7 @@ object IsNonLabelledGeneric {
 trait IsLooseLabelledGeneric[T] extends IsGeneric[T]
 
 object IsLooseLabelledGeneric {
-  type Aux[T, Repr0] = IsLooseLabelledGeneric[T]{ type Repr = Repr0 }
+  type Aux[T, Repr0] = IsLooseLabelledGeneric[T] { type Repr = Repr0 }
 
   def apply[T](implicit lgen: IsLooseLabelledGeneric[T]): Aux[T, lgen.Repr] = lgen
 
@@ -76,7 +76,7 @@ object IsLooseLabelledGeneric {
 trait IsTuple[T] extends IsGeneric[T] { type Repr <: HList }
 
 object IsTuple {
-  type Aux[T, Repr0] = IsTuple[T]{ type Repr = Repr0 }
+  type Aux[T, Repr0] = IsTuple[T] { type Repr = Repr0 }
 
   def apply[T](implicit gen: IsTuple[T]): Aux[T, gen.Repr] = gen
 
