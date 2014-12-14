@@ -45,25 +45,121 @@ object LabelledGeneric {
   implicit def materialize[T, R]: Aux[T, R] = macro GenericMacros.materializeLabelled[T, R]
 }
 
+trait NonLabelledGeneric[T] extends Generic[T]
+
+object NonLabelledGeneric {
+  type Aux[T, Repr0] = NonLabelledGeneric[T]{ type Repr = Repr0 }
+
+  def apply[T](implicit gen: NonLabelledGeneric[T]): Aux[T, gen.Repr] = gen
+
+  implicit def materialize[T, R]: Aux[T, R] = macro GenericMacros.materializeNonLabelled[T, R]
+}
+
+trait LooseLabelledGeneric[T] extends Generic[T]
+
+object LooseLabelledGeneric {
+  type Aux[T, Repr0] = LooseLabelledGeneric[T]{ type Repr = Repr0 }
+
+  def apply[T](implicit lgen: LooseLabelledGeneric[T]): Aux[T, lgen.Repr] = lgen
+
+  implicit def materialize[T, R]: Aux[T, R] = macro GenericMacros.materializeLooseLabelled[T, R]
+}
+
 class nonGeneric extends StaticAnnotation
 
 class GenericMacros(val c: whitebox.Context) {
   import c.universe._
 
+  def isFieldTpe(tpe: Type): Boolean = 
+    if (tpe <:< typeOf[labelled.FieldType[_, _]]) {
+      import scala.:: 
+      
+      tpe.dealias.typeArgs match {
+        case kTpe :: _ :: Nil =>
+          (kTpe <:< typeOf[Symbol] && !(kTpe =:= typeOf[Symbol])) ||
+            (kTpe <:< typeOf[String] && !(kTpe =:= typeOf[String]))
+        case _ =>
+          false
+      }
+    } else
+      false
+
+  def isLabelledTpe(tpe: Type, cons: Type, nil: Type): Boolean =
+    if (tpe <:< cons) {
+      import scala.::
+      
+      tpe.dealias.typeArgs match {
+        case headTpe :: tailTpe :: Nil if isFieldTpe(headTpe) =>
+          isLabelledTpe(tailTpe, cons, nil)
+        case _ =>
+          false
+      }
+    } else
+      tpe <:< nil
+
+  def isRecordTpe(tpe: Type): Boolean =
+    isLabelledTpe(tpe, typeOf[::[_, _]], typeOf[HNil])
+
+  def isUnionTpe(tpe: Type): Boolean =
+    isLabelledTpe(tpe, typeOf[:+:[_, _]], typeOf[CNil])
+  
+  def isTupleType(tpe: Type): Boolean =
+    tpe <:< typeOf[Tuple1[_]] ||
+      tpe <:< typeOf[(_, _)] ||
+      tpe <:< typeOf[(_, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _, _, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _, _, _, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _, _, _, _, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _, _, _, _, _, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _, _, _, _, _, _, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _, _, _, _, _, _, _, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _, _, _, _, _, _, _, _, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _, _, _, _, _, _, _, _, _, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)] ||
+      tpe <:< typeOf[(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)]
+
   def materialize[T: WeakTypeTag, R: WeakTypeTag] =
-    materializeAux(false, weakTypeOf[T], weakTypeOf[R])
+    materializeAux(false, false, weakTypeOf[T], weakTypeOf[R])
 
   def materializeLabelled[T: WeakTypeTag, R: WeakTypeTag] =
-    materializeAux(true, weakTypeOf[T], weakTypeOf[R])
+    materializeAux(true, true, weakTypeOf[T], weakTypeOf[R])
 
-  def materializeAux(labelled: Boolean, tpe: Type, rTpe: Type): Tree = {
+  def materializeNonLabelled[T: WeakTypeTag, R: WeakTypeTag] =
+    materializeAux(false, true, weakTypeOf[T], weakTypeOf[R])
+
+  def materializeLooseLabelled[T: WeakTypeTag, R: WeakTypeTag] =
+    materializeAux(true, false, weakTypeOf[T], weakTypeOf[R])
+
+  def materializeAux(labelled: Boolean, strict: Boolean, tpe: Type, rTpe: Type): Tree = {
     import c.{ abort, enclosingPosition, typeOf }
 
     val helper = new Helper(tpe, false, labelled, labelled)
-    if (tpe <:< typeOf[HList] || tpe <:< typeOf[Coproduct])
+
+    if (tpe <:< typeOf[HList]) {
+      if (strict && (labelled != isRecordTpe(tpe)))
+        c.error(c.enclosingPosition, if (labelled) s"$tpe has no labels" else s"$tpe is a labelled type")
+
       helper.materializeIdentityGeneric
-    else
+    } else if (tpe <:< typeOf[Coproduct]) {
+      if (strict && (labelled != isUnionTpe(tpe)))
+        c.error(c.enclosingPosition, if (labelled) s"$tpe has no labels" else s"$tpe is a labelled type")
+
+      helper.materializeIdentityGeneric
+    } else {
+      if (strict && (labelled == isTupleType(tpe)))
+        c.error(c.enclosingPosition, if (labelled) s"$tpe has no labels" else s"$tpe is a labelled type")
+      
       helper.materializeGeneric
+    }
   }
 
   def deriveProductInstance[C[_], T](ev: Tree)(implicit tTag: WeakTypeTag[T], cTag: WeakTypeTag[C[Any]]) =
