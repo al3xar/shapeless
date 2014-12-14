@@ -29,7 +29,7 @@ object union {
    * @author Miles Sabin
    */
   @annotation.implicitNotFound(msg = "No field ${K} in union ${C}")
-  trait Selector[C <: Coproduct, K] extends Serializable {
+  trait Selector[-C <: Coproduct, K] extends Serializable {
     type V
     type Out = Option[V]
     def apply(l : C): Out

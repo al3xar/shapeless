@@ -32,7 +32,7 @@ package record {
    * @author Miles Sabin
    */
   @annotation.implicitNotFound(msg = "No field ${K} in record ${L}")
-  trait Selector[L <: HList, K] extends DepFn1[L] with Serializable {
+  trait Selector[-L <: HList, K] extends Serializable {
     type Out
     def apply(l : L): Out
   }

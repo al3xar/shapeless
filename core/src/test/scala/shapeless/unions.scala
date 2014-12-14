@@ -63,9 +63,9 @@ class UnionTests {
 
   @Test
   def testSelectDynamic {
-    val u1 = Coproduct[U]('i ->> 23).union
-    val u2 = Coproduct[U]('s ->> "foo").union
-    val u3 = Coproduct[U]('b ->> true).union
+    val u1 = Coproduct[U]('i ->> 23)
+    val u2 = Coproduct[U]('s ->> "foo")
+    val u3 = Coproduct[U]('b ->> true)
 
     val v1 = u1.i
     typed[Option[Int]](v1)
