@@ -111,6 +111,7 @@ package object shapeless {
   /**
    * Empty `HList` element type.
    */
-  type HNil = HNil.type 
+  type HNil = HNilInstance.type
+  val HNil = HNilInstance
   
 }

@@ -247,7 +247,7 @@ object hlist {
 
     import shapeless.nat._
     type Aux[L <: HList, N <: Nat] = Length[L] { type Out = N }
-    implicit def hnilLength[L <: HNil]: Aux[L, _0] = new Length[L] {
+    implicit val hnilLength: Aux[HNil, _0] = new Length[HNil] {
       type Out = _0
       def apply(): Out = _0
     }
