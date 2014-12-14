@@ -16,7 +16,7 @@
 
 package shapeless.examples
 
-import shapeless.{ IsGeneric$, ::, HList, HNil }
+import shapeless.{ IsGeneric, ::, HList, HNil }
 
 object OrderingExamples extends App {
 
