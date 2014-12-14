@@ -29,7 +29,7 @@ object union {
    * @author Miles Sabin
    */
   @annotation.implicitNotFound(msg = "No field ${K} in union ${C}")
-  trait Selector[C <: Coproduct, K] {
+  trait Selector[-C <: Coproduct, K] {
     type V
     type Out = Option[V]
     def apply(l : C): Out

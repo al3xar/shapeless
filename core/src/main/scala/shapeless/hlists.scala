@@ -16,6 +16,7 @@
 
 package shapeless
 
+import scala.language.dynamics
 import scala.annotation.tailrec
 
 /**
@@ -30,8 +31,16 @@ sealed trait HList
  * 
  * @author Miles Sabin
  */
-final case class ::[+H, +T <: HList](head : H, tail : T) extends HList {
+final case class ::[+H, +T <: HList](head : H, tail : T) extends HList with Dynamic {
   override def toString = head+" :: "+tail.toString
+
+  import shapeless.tag.@@
+  import ops.record.Selector
+
+  /**
+   * Allows dynamic-style access to fields of a record whose keys are Symbols.
+   */
+  def selectDynamic(key: String)(implicit selector: Selector[H :: T, Symbol @@ key.type]): selector.Out = selector(this)
 }
 
 /**

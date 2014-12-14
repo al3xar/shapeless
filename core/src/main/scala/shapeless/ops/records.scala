@@ -32,7 +32,7 @@ package record {
    * @author Miles Sabin
    */
   @annotation.implicitNotFound(msg = "No field ${K} in record ${L}")
-  trait Selector[L <: HList, K] {
+  trait Selector[-L <: HList, K] {
     type Out
     def apply(l : L): Out
   }

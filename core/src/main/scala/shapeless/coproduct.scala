@@ -16,9 +16,19 @@
 
 package shapeless
 
+import scala.language.dynamics
+
 sealed trait Coproduct
 
-sealed trait :+:[+H, +T <: Coproduct] extends Coproduct
+sealed trait :+:[+H, +T <: Coproduct] extends Coproduct with Dynamic {
+  import shapeless.tag.@@
+  import ops.union.Selector
+
+  /**
+   * Allows dynamic-style access to fields of a union whose keys are Symbols.
+   */
+  def selectDynamic(key: String)(implicit selector: Selector[H :+: T, Symbol @@ key.type]): selector.Out = selector(this)
+}
 
 final case class Inl[+H, +T <: Coproduct](head : H) extends :+:[H, T] {
   override def toString = head.toString

@@ -585,13 +585,12 @@ class RecordTests {
   @Test
   def testSelectDynamic {
     val r = ('foo ->> 23) :: ('bar ->> true) :: HNil
-    val d = r.record
 
-    val v1 = d.foo
+    val v1 = r.foo
     typed[Int](v1)
     assertEquals(23, v1)
 
-    val v2 = d.bar
+    val v2 = r.bar
     typed[Boolean](v2)
     assertEquals(true, v2)
 
