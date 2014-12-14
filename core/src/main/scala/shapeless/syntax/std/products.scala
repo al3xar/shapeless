@@ -28,7 +28,7 @@ final class ProductOps[P](p: P) {
   /**
    * Returns an `HList` containing the elements of this tuple.
    */
-  def productElements(implicit gen: Generic[P]): gen.Repr = gen.to(p)
+  def toHList[L <: HList](implicit gen: Generic.Aux[P, L]): L = gen.to(p)
 
   /**
    * Compute the length of this product.
