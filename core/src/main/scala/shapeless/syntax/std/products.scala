@@ -31,6 +31,11 @@ final class ProductOps[P](p: P) {
   def toHList[L <: HList](implicit gen: Generic.Aux[P, L]): L = gen.to(p)
 
   /**
+   * Returns an record containing the elements of this labelled product.
+   */
+  def toRecord[R <: HList](implicit gen: LabelledGeneric.Aux[P, R]): R = gen.to(p)
+
+  /**
    * Compute the length of this product.
    */
   def length(implicit length : ProductLength[P]) : length.Out = length(p)

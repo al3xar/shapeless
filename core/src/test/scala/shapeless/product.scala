@@ -4,6 +4,7 @@ import org.junit.Test
 import testutil._
 
 import syntax.std.product._
+import record._
 
 class ProductTests {
 
@@ -32,6 +33,28 @@ class ProductTests {
     val bar = Bar(true, foo)
     val barL = bar.toHList
     val expectedBarL = true :: foo :: HNil
+    equalInferredTypes(expectedBarL, barL)
+    assertTypedEquals(expectedBarL, barL)
+  }
+
+  @Test
+  def testToRecord = {
+    // FIXME: should work (needs changes in GenericMacros?)
+    // Empty.toRecord
+
+    val e = EmptyCC()
+    val el = e.toRecord
+    equalInferredTypes(HNil, el)
+
+    val foo = Foo(1, "b")
+    val fooL = foo.toRecord
+    val expectedFooL = Record(i = 1, s = "b")
+    equalInferredTypes(expectedFooL, fooL)
+    assertTypedEquals(expectedFooL, fooL)
+
+    val bar = Bar(true, foo)
+    val barL = bar.toRecord
+    val expectedBarL = Record(b = true, f = foo)
     equalInferredTypes(expectedBarL, barL)
     assertTypedEquals(expectedBarL, barL)
   }
