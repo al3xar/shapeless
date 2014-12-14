@@ -33,6 +33,8 @@ object Generic {
   def apply[T](implicit gen: Generic[T]): Aux[T, gen.Repr] = gen
 
   implicit def materialize[T, R]: Aux[T, R] = macro GenericMacros.materialize[T, R]
+  
+  def debug[T]: Generic[T] = macro GenericMacros.materializeDebug[T]
 }
 
 trait LabelledGeneric[T] extends Generic[T]
@@ -43,6 +45,8 @@ object LabelledGeneric {
   def apply[T](implicit lgen: LabelledGeneric[T]): Aux[T, lgen.Repr] = lgen
 
   implicit def materialize[T, R]: Aux[T, R] = macro GenericMacros.materializeLabelled[T, R]
+
+  def debug[T]: LabelledGeneric[T] = macro GenericMacros.materializeLabelledDebug[T]
 }
 
 trait NonLabelledGeneric[T] extends Generic[T]
@@ -53,6 +57,8 @@ object NonLabelledGeneric {
   def apply[T](implicit gen: NonLabelledGeneric[T]): Aux[T, gen.Repr] = gen
 
   implicit def materialize[T, R]: Aux[T, R] = macro GenericMacros.materializeNonLabelled[T, R]
+
+  def debug[T]: NonLabelledGeneric[T] = macro GenericMacros.materializeNonLabelledDebug[T]
 }
 
 trait LooseLabelledGeneric[T] extends Generic[T]
@@ -63,6 +69,8 @@ object LooseLabelledGeneric {
   def apply[T](implicit lgen: LooseLabelledGeneric[T]): Aux[T, lgen.Repr] = lgen
 
   implicit def materialize[T, R]: Aux[T, R] = macro GenericMacros.materializeLooseLabelled[T, R]
+
+  def debug[T]: LooseLabelledGeneric[T] = macro GenericMacros.materializeLooseLabelledDebug[T]
 }
 
 class nonGeneric extends StaticAnnotation
@@ -70,14 +78,26 @@ class nonGeneric extends StaticAnnotation
 class GenericMacros(val c: whitebox.Context) {
   import c.universe._
 
-  def isFieldTpe(tpe: Type): Boolean = 
-    if (tpe <:< typeOf[labelled.FieldType[_, _]]) {
-      import scala.:: 
+  def isSymbolLiteral(tpe: Type): Boolean =
+    if (tpe <:< typeOf[scala.Symbol] && tpe <:< typeOf[tag.Tagged[_]]) {
+      import scala.::
+
+      tpe.baseType(typeOf[tag.Tagged[_]].typeSymbol).dealias.typeArgs match {
+        case stringTpe :: Nil if stringTpe <:< typeOf[String] =>
+          !(stringTpe =:= typeOf[String])
+        case _ =>
+          false
+      }
+    } else 
+      false
+
+  def isFieldTpe(tpe: Type): Boolean =
+    if (tpe <:< typeOf[labelled.KeyTag[_, _]]) {
+      import scala.::
       
-      tpe.dealias.typeArgs match {
+      tpe.baseType(typeOf[labelled.KeyTag[_, _]].typeSymbol).dealias.typeArgs match {
         case kTpe :: _ :: Nil =>
-          (kTpe <:< typeOf[Symbol] && !(kTpe =:= typeOf[Symbol])) ||
-            (kTpe <:< typeOf[String] && !(kTpe =:= typeOf[String]))
+          isSymbolLiteral(kTpe) || (kTpe <:< typeOf[String] && !(kTpe =:= typeOf[String]))
         case _ =>
           false
       }
@@ -128,37 +148,58 @@ class GenericMacros(val c: whitebox.Context) {
       tpe <:< typeOf[(_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)]
 
   def materialize[T: WeakTypeTag, R: WeakTypeTag] =
-    materializeAux(false, false, weakTypeOf[T], weakTypeOf[R])
+    materializeAux(false, false, weakTypeOf[T])
 
   def materializeLabelled[T: WeakTypeTag, R: WeakTypeTag] =
-    materializeAux(true, true, weakTypeOf[T], weakTypeOf[R])
+    materializeAux(true, true, weakTypeOf[T])
 
   def materializeNonLabelled[T: WeakTypeTag, R: WeakTypeTag] =
-    materializeAux(false, true, weakTypeOf[T], weakTypeOf[R])
+    materializeAux(false, true, weakTypeOf[T])
 
   def materializeLooseLabelled[T: WeakTypeTag, R: WeakTypeTag] =
-    materializeAux(true, false, weakTypeOf[T], weakTypeOf[R])
+    materializeAux(true, false, weakTypeOf[T])
 
-  def materializeAux(labelled: Boolean, strict: Boolean, tpe: Type, rTpe: Type): Tree = {
-    import c.{ abort, enclosingPosition, typeOf }
+  def materializeDebug[T: WeakTypeTag] =
+    materializeAux(false, false, weakTypeOf[T])
+
+  def materializeLabelledDebug[T: WeakTypeTag] =
+    materializeAux(true, true, weakTypeOf[T])
+
+  def materializeNonLabelledDebug[T: WeakTypeTag] =
+    materializeAux(false, true, weakTypeOf[T])
+
+  def materializeLooseLabelledDebug[T: WeakTypeTag] =
+    materializeAux(true, false, weakTypeOf[T])
+
+  def materializeAux(labelled: Boolean, strict: Boolean, tpe: Type): Tree = {
+    import c.typeOf
 
     val helper = new Helper(tpe, false, labelled, labelled)
 
+    def genericTpe = (labelled, strict) match {
+      case ( true, true ) => typeOf[LabelledGeneric[_]].typeConstructor
+      case (false, true ) => typeOf[NonLabelledGeneric[_]].typeConstructor
+      case ( true, false) => typeOf[LooseLabelledGeneric[_]].typeConstructor
+      case (false, false) => typeOf[Generic[_]].typeConstructor
+    }
+    
+    def labelErrorMsg = if (labelled) s"$tpe has no labels" else s"$tpe is a labelled type"
+
     if (tpe <:< typeOf[HList]) {
       if (strict && (labelled != isRecordTpe(tpe)))
-        c.error(c.enclosingPosition, if (labelled) s"$tpe has no labels" else s"$tpe is a labelled type")
+        c.error(c.enclosingPosition, labelErrorMsg)
 
-      helper.materializeIdentityGeneric
+      helper.materializeIdentityGeneric(genericTpe)
     } else if (tpe <:< typeOf[Coproduct]) {
-      if (strict && (labelled != isUnionTpe(tpe)))
-        c.error(c.enclosingPosition, if (labelled) s"$tpe has no labels" else s"$tpe is a labelled type")
+      if (strict && (labelled != isUnionTpe(tpe)))  
+        c.error(c.enclosingPosition, labelErrorMsg)
 
-      helper.materializeIdentityGeneric
+      helper.materializeIdentityGeneric(genericTpe)
     } else {
       if (strict && (labelled == isTupleType(tpe)))
-        c.error(c.enclosingPosition, if (labelled) s"$tpe has no labels" else s"$tpe is a labelled type")
+        c.error(c.enclosingPosition, labelErrorMsg)   
       
-      helper.materializeGeneric
+      helper.materializeGeneric(genericTpe)
     }
   }
 
@@ -198,8 +239,6 @@ class GenericMacros(val c: whitebox.Context) {
     def atatTpe = typeOf[tag.@@[_,_]].typeConstructor
     def symTpe = typeOf[scala.Symbol]
     def fieldTypeTpe = typeOf[shapeless.labelled.FieldType[_, _]].typeConstructor
-    def genericTpe = typeOf[Generic[_]].typeConstructor
-    def labelledGenericTpe = typeOf[LabelledGeneric[_]].typeConstructor
     def typeClassTpe = typeOf[TypeClass[Any]].typeConstructor
     def labelledTypeClassTpe = typeOf[LabelledTypeClass[Any]].typeConstructor
     def productTypeClassTpe = typeOf[ProductTypeClass[Any]].typeConstructor
@@ -447,9 +486,7 @@ class GenericMacros(val c: whitebox.Context) {
       }
     }
 
-    def materializeGeneric = {
-      val genericTypeConstructor: Type = if(toLabelled) labelledGenericTpe else genericTpe
-
+    def materializeGeneric(genericTypeConstructor: Type) = {
       val reprTpe =
         if(fromProduct) reprOf(fromTpe)
         else if(toLabelled) {
@@ -473,7 +510,7 @@ class GenericMacros(val c: whitebox.Context) {
       """
     }
 
-    def materializeIdentityGeneric = {
+    def materializeIdentityGeneric(genericTpe: Type) = {
       val clsName = TypeName(c.freshName())
       q"""
         final class $clsName extends ${genericTpe.typeSymbol}[$fromTpe] {

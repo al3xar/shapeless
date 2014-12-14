@@ -463,4 +463,34 @@ class GenericTests {
     typed[O.Nested](n1)
     assertEquals(n0, n1)
   }
+  
+  @Test
+  def labelledIsStrict {
+    import record._
+    import union._
+    
+    type L = Int :: String :: HNil
+    Generic[L]
+    illTyped(" LabelledGeneric[L] ")
+    NonLabelledGeneric[L]
+    LooseLabelledGeneric[L]
+
+    type T = (Int, String)
+    Generic[T]
+    illTyped(" LabelledGeneric[T] ")
+    NonLabelledGeneric[T]
+    LooseLabelledGeneric[T]
+
+    type R = Record.`i: Int, s: String`.T
+    Generic[R]
+    LabelledGeneric[R]
+    illTyped(" NonLabelledGeneric[R] ")
+    LooseLabelledGeneric[R]
+
+    type U = Union.`i: Int, s: String`.T
+    Generic[U]
+    LabelledGeneric[U]
+    illTyped(" NonLabelledGeneric[U] ")
+    LooseLabelledGeneric[U]
+  }
 }
