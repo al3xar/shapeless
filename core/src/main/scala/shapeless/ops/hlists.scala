@@ -835,7 +835,17 @@ object hlist {
    */
   trait FilterType[L <: HList, U] extends DepFn1[L] { type Out <: HList }
 
-  object FilterType {
+  trait LowPriorityFilterType {
+
+    implicit def hconsFilterTypeRemoved[H, L <: HList, U]
+      (implicit f : FilterType[L, U]): FilterType.Aux[H :: L, U, f.Out] =
+        new FilterType[H :: L, U] {
+          type Out = f.Out
+          def apply(l : H :: L): Out = f(l.tail)
+        }
+  }
+  
+  object FilterType extends LowPriorityFilterType {
     def apply[L <: HList, U](implicit filterType: FilterType[L, U]): Aux[L, U, filterType.Out] = filterType
 
     type Aux[L <: HList, U, Out0 <: HList] = FilterType[L, U] { type Out = Out0 }
@@ -852,13 +862,6 @@ object hlist {
           type Out = H :: f.Out
           def apply(l : H :: L) : Out = l.head :: f(l.tail)
         }
-
-    implicit def hconsFilterTypeRemoved[H, L <: HList, U]
-      (implicit f : FilterType[L, U], e : U =:!= H): Aux[H :: L, U, f.Out] =
-        new FilterType[H :: L, U] {
-          type Out = f.Out
-          def apply(l : H :: L): Out = f(l.tail)
-        }
   }
 
   /**
@@ -868,7 +871,16 @@ object hlist {
    */
   trait FilterNotType[L <: HList, U] extends DepFn1[L] { type Out <: HList }
 
-  object FilterNotType {
+  trait LowPriorityFilterNotType {
+    implicit def hconsFilterNotTypeKept[H, L <: HList, U, Out <: HList]
+      (implicit f: FilterNotType[L, U]): FilterNotType.Aux[H :: L, U, H :: f.Out] =
+        new FilterNotType[H :: L, U] {
+          type Out = H :: f.Out
+          def apply(l : H :: L): Out = l.head :: f(l.tail)
+        }
+  }
+  
+  object FilterNotType extends LowPriorityFilterNotType {
     def apply[L <: HList, U](implicit filterNotType: FilterNotType[L, U]): Aux[L, U, filterNotType.Out] = filterNotType
 
     type Aux[L <: HList, U, Out0 <: HList] = FilterNotType[L, U] { type Out = Out0 }
@@ -884,13 +896,6 @@ object hlist {
         new FilterNotType[H :: L, H] {
           type Out = f.Out
           def apply(l : H :: L): Out = f(l.tail)
-        }
-
-    implicit def hconsFilterNotTypeKept[H, L <: HList, U, Out <: HList]
-      (implicit f: FilterNotType[L, U], e: U =:!= H): Aux[H :: L, U, H :: f.Out] =
-        new FilterNotType[H :: L, U] {
-          type Out = H :: f.Out
-          def apply(l : H :: L): Out = l.head :: f(l.tail)
         }
   }
 

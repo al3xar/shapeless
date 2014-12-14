@@ -94,7 +94,20 @@ object coproduct {
     type Out = Option[A]
   }
 
-  object Filter {
+  trait LowPriorityFilter {
+    implicit def coproductFilter_NonMatch[H, T <: Coproduct, FilterT <: Coproduct, U](implicit 
+      filter: Filter.Aux[T, U, FilterT]
+    ): Filter.Aux[H :+: T, U, FilterT] = new Filter[H :+: T, U] {
+      type A = FilterT
+
+      def apply(c: H :+: T): Option[A] = c match {
+        case Inr(t) => filter(t)
+        case _      => None
+      }
+    }
+  }
+
+  object Filter extends LowPriorityFilter {
     def apply[C <: Coproduct, U](implicit filter: Filter[C, U]): Aux[C, U, filter.A] = filter
 
     type Aux[C <: Coproduct, U, A0 <: Coproduct] = Filter[C, U] { type A = A0 }
@@ -115,17 +128,6 @@ object coproduct {
         case Inr(t) => filter(t).map(Inr[H, FilterT](_))
       }
     }
-
-    implicit def coproductFilter_NonMatch[H, T <: Coproduct, FilterT <: Coproduct, U](
-      implicit filter: Aux[T, U, FilterT], e: U =:!= H
-    ): Aux[H :+: T, U, FilterT] = new Filter[H :+: T, U] {
-      type A = FilterT
-
-      def apply(c: H :+: T): Option[A] = c match {
-        case Inr(t) => filter(t)
-        case _      => None
-      }
-    }
   }
 
   trait FilterNot[C <: Coproduct, U] extends DepFn1[C] {
@@ -133,7 +135,21 @@ object coproduct {
     type Out = Option[A]
   }
 
-  object FilterNot {
+  trait LowPriorityFilterNot {
+    implicit def coproductFilterNot_NonMatch[H, T <: Coproduct, TFilterNotU <: Coproduct, U](implicit 
+      filterNot: FilterNot.Aux[T, U, TFilterNotU],
+      inject: Inject[H :+: TFilterNotU, H]
+    ): FilterNot.Aux[H :+: T, U, H :+: TFilterNotU] = new FilterNot[H :+: T, U] {
+      type A = H :+: TFilterNotU
+
+      def apply(c: H :+: T): Option[A] = c match {
+        case Inl(h) => Some(inject(h))
+        case Inr(t) => filterNot(t).map(Inr[H, TFilterNotU](_))
+      }
+    }
+  }
+
+  object FilterNot extends LowPriorityFilterNot {
     def apply[C <: Coproduct, U](implicit filterNot: FilterNot[C, U]): Aux[C, U, filterNot.A] = filterNot
 
     type Aux[C <: Coproduct, U, A0 <: Coproduct] = FilterNot[C, U] { type A = A0 }
@@ -152,17 +168,6 @@ object coproduct {
       def apply(c: H :+: T): Option[A] = c match {
         case Inr(t) => filterNot(t)
         case _      => None
-      }
-    }
-
-    implicit def coproductFilterNot_NonMatch[H, T <: Coproduct, TFilterNotU <: Coproduct, U](
-      implicit filterNot: Aux[T, U, TFilterNotU], inject: Inject[H :+: TFilterNotU, H], e: U =:!= H
-    ): Aux[H :+: T, U, H :+: TFilterNotU] = new FilterNot[H :+: T, U] {
-      type A = H :+: TFilterNotU
-
-      def apply(c: H :+: T): Option[A] = c match {
-        case Inl(h) => Some(inject(h))
-        case Inr(t) => filterNot(t).map(Inr[H, TFilterNotU](_))
       }
     }
   }
