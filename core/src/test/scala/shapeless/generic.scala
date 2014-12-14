@@ -482,33 +482,39 @@ class GenericTests {
     illTyped(" IsLabelledGeneric[L] ")
     IsNonLabelledGeneric[L]
     IsLooseLabelledGeneric[L]
+    illTyped(" IsTuple[L] ")
 
     type T = (Int, String)
     IsGeneric[T]
     illTyped(" IsLabelledGeneric[T] ")
     IsNonLabelledGeneric[T]
     IsLooseLabelledGeneric[T]
+    IsTuple[T]
 
     type R = Record.`i: Int, s: String`.T
     IsGeneric[R]
     IsLabelledGeneric[R]
     illTyped(" IsNonLabelledGeneric[R] ")
     IsLooseLabelledGeneric[R]
+    illTyped(" IsTuple[R] ")
 
     type U = Union.`i: Int, s: String`.T
     IsGeneric[U]
     IsLabelledGeneric[U]
     illTyped(" IsNonLabelledGeneric[U] ")
     IsLooseLabelledGeneric[U]
+    illTyped(" IsTuple[U] ")
     
     IsGeneric[CC]
     IsLabelledGeneric[CC]
     illTyped(" IsNonLabelledGeneric[CC] ")
     IsLooseLabelledGeneric[CC]
+    illTyped(" IsTuple[CC] ")
 
     IsGeneric[CP]
     IsLabelledGeneric[CP]
     illTyped(" IsNonLabelledGeneric[CP] ")
     IsLooseLabelledGeneric[CP]
+    illTyped(" IsTuple[CP] ")
   }
 }

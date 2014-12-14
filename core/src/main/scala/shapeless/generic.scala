@@ -73,6 +73,18 @@ object IsLooseLabelledGeneric {
   def debug[T]: IsLooseLabelledGeneric[T] = macro GenericMacros.materializeLooseLabelledDebug[T]
 }
 
+trait IsTuple[T] extends IsGeneric[T] { type Repr <: HList }
+
+object IsTuple {
+  type Aux[T, Repr0] = IsTuple[T]{ type Repr = Repr0 }
+
+  def apply[T](implicit gen: IsTuple[T]): Aux[T, gen.Repr] = gen
+
+  implicit def materialize[T, R]: Aux[T, R] = macro GenericMacros.materializeTuple[T, R]
+
+  def debug[T]: IsTuple[T] = macro GenericMacros.materializeTupleDebug[T]
+}
+
 class nonGeneric extends StaticAnnotation
 
 class GenericMacros(val c: whitebox.Context) {
@@ -201,6 +213,23 @@ class GenericMacros(val c: whitebox.Context) {
       
       helper.materializeGeneric(genericTpe)
     }
+  }
+
+  def materializeTuple[T: WeakTypeTag, R: WeakTypeTag] =
+    materializeTupleAux(weakTypeOf[T])
+
+  def materializeTupleDebug[T: WeakTypeTag] =
+    materializeTupleAux(weakTypeOf[T])
+
+  def materializeTupleAux(tpe: Type): Tree = {
+    import c.typeOf
+
+    if (!isTupleType(tpe))
+      c.error(c.enclosingPosition, s"$tpe is not a tuple type")
+
+    val helper = new Helper(tpe, false, false, false)
+
+    helper.materializeGeneric(typeOf[IsTuple[_]].typeConstructor)
   }
 
   def deriveProductInstance[C[_], T](ev: Tree)(implicit tTag: WeakTypeTag[T], cTag: WeakTypeTag[C[Any]]) =
