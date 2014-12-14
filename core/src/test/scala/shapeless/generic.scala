@@ -73,7 +73,7 @@ package GenericTestsAux {
   object star extends starLP {
     implicit def caseString = at[String](_+"*")
 
-    implicit def caseIso[T, L <: HList](implicit gen: Generic.Aux[T, L], mapper: hl.Mapper.Aux[this.type, L, L]) =
+    implicit def caseIso[T, L <: HList](implicit gen: IsGeneric.Aux[T, L], mapper: hl.Mapper.Aux[this.type, L, L]) =
       at[T](t => gen.from(gen.to(t).map(star)))
   }
   
@@ -84,10 +84,10 @@ package GenericTestsAux {
   object inc extends incLP {
     implicit val caseInt = at[Int](_+1)
     
-    implicit def caseProduct[T, L <: HList](implicit gen: Generic.Aux[T, L], mapper: hl.Mapper.Aux[this.type, L, L]) =
+    implicit def caseProduct[T, L <: HList](implicit gen: IsGeneric.Aux[T, L], mapper: hl.Mapper.Aux[this.type, L, L]) =
       at[T](t => gen.from(gen.to(t).map(inc)))
       
-    implicit def caseCoproduct[T, L <: Coproduct](implicit gen: Generic.Aux[T, L], mapper: cp.Mapper.Aux[this.type, L, L]) =
+    implicit def caseCoproduct[T, L <: Coproduct](implicit gen: IsGeneric.Aux[T, L], mapper: cp.Mapper.Aux[this.type, L, L]) =
       at[T](t => gen.from(gen.to(t).map(inc)))
   }
 
@@ -121,7 +121,7 @@ class GenericTests {
   def testProductBasics {
     val p = Person("Joe Soap", "Brighton", 23)
     type SSI = String :: String :: Int :: HNil
-    val gen = Generic[Person]
+    val gen = IsGeneric[Person]
     
     val p0 = gen.to(p)
     typed[SSI](p0)
@@ -134,14 +134,14 @@ class GenericTests {
   
   @Test
   def testTuples {
-    val gen1 = Generic[Tuple1[Int]]
-    typed[Generic[Tuple1[Int]] { type Repr = Int :: HNil }](gen1)
+    val gen1 = IsGeneric[Tuple1[Int]]
+    typed[IsGeneric[Tuple1[Int]] { type Repr = Int :: HNil }](gen1)
     
-    val gen2 = Generic[(Int, String)]
-    typed[Generic[(Int, String)] { type Repr = Int :: String :: HNil }](gen2)
+    val gen2 = IsGeneric[(Int, String)]
+    typed[IsGeneric[(Int, String)] { type Repr = Int :: String :: HNil }](gen2)
     
-    val gen3 = Generic[(Int, String, Boolean)]
-    typed[Generic[(Int, String, Boolean)] { type Repr = Int :: String :: Boolean :: HNil }](gen3)
+    val gen3 = IsGeneric[(Int, String, Boolean)]
+    typed[IsGeneric[(Int, String, Boolean)] { type Repr = Int :: String :: Boolean :: HNil }](gen3)
   }
 
   @Test
@@ -151,17 +151,17 @@ class GenericTests {
     type T2 = Int :: String :: HNil
     type T3 = Int :: String :: Boolean :: HNil
     
-    val gen0 = Generic[HNil]
-    typed[Generic[T0] { type Repr = T0 }](gen0)
+    val gen0 = IsGeneric[HNil]
+    typed[IsGeneric[T0] { type Repr = T0 }](gen0)
     
-    val gen1 = Generic[Int :: HNil]
-    typed[Generic[T1] { type Repr = T1 }](gen1)
+    val gen1 = IsGeneric[Int :: HNil]
+    typed[IsGeneric[T1] { type Repr = T1 }](gen1)
     
-    val gen2 = Generic[Int :: String :: HNil]
-    typed[Generic[T2] { type Repr = T2 }](gen2)
+    val gen2 = IsGeneric[Int :: String :: HNil]
+    typed[IsGeneric[T2] { type Repr = T2 }](gen2)
     
-    val gen3 = Generic[Int :: String :: Boolean :: HNil]
-    typed[Generic[T3] { type Repr = T3 }](gen3)
+    val gen3 = IsGeneric[Int :: String :: Boolean :: HNil]
+    typed[IsGeneric[T3] { type Repr = T3 }](gen3)
   }
 
   @Test
@@ -190,7 +190,7 @@ class GenericTests {
     val b: Fruit = Banana()
     val o: Fruit = Orange()
     
-    val gen = Generic[Fruit]
+    val gen = IsGeneric[Fruit]
     
     val a0 = gen.to(a)
     typed[APBO](a0)
@@ -224,7 +224,7 @@ class GenericTests {
     val b: Fruit = Banana()
     val o: Fruit = Orange()
     
-    val gen = Generic[Fruit]
+    val gen = IsGeneric[Fruit]
     
     val a0 = gen.to(a)
     typed[APBO](a0)
@@ -251,7 +251,7 @@ class GenericTests {
   def testSingletonCoproducts {
     type S = Single
 
-    val gen = Generic[AbstractSingle]
+    val gen = IsGeneric[AbstractSingle]
     
     val s: AbstractSingle = Single()
     
@@ -268,7 +268,7 @@ class GenericTests {
     val b: Enum = B
     val c: Enum = C
     
-    val gen = Generic[Enum]
+    val gen = IsGeneric[Enum]
     
     val a0 = gen.to(a)
     typed[ABC](a0)
@@ -295,7 +295,7 @@ class GenericTests {
     val b: Enum = B
     val c: Enum = C
     
-    val gen = Generic[Enum]
+    val gen = IsGeneric[Enum]
     
     val a0 = gen.to(a)
     typed[ABC](a0)
@@ -324,7 +324,7 @@ class GenericTests {
     val t: Tree[Int] = Node(Node(Leaf(23), Leaf(13)), Leaf(11))
     type NI = Leaf[Int] :+: Node[Int] :+: CNil
     
-    val gen = Generic[Tree[Int]]
+    val gen = IsGeneric[Tree[Int]]
     
     val t0 = gen.to(t)
     typed[NI](t0)
@@ -338,7 +338,7 @@ class GenericTests {
     val o: Option[Int] = Option(23)
     type SN = None.type :+: Some[Int] :+: CNil
     
-    val gen = Generic[Option[Int]]
+    val gen = IsGeneric[Option[Int]]
     
     val o0 = gen.to(o)
     typed[SN](o0)
@@ -368,7 +368,7 @@ class GenericTests {
     val l: List[Int] = List(1, 2, 3)
     type CN = Cons[Int] :+: Nil.type :+: CNil
     
-    val gen = Generic[List[Int]]
+    val gen = IsGeneric[List[Int]]
     
     val l0 = gen.to(l)
     typed[CN](l0)
@@ -383,9 +383,9 @@ class GenericTests {
     val nccb = new NonCCB(true, 2.0)
     val ancc: AbstractNonCC = ncca
 
-    val genA = Generic[NonCCA]
-    val genB = Generic[NonCCB]
-    val genAbs = Generic[AbstractNonCC]
+    val genA = IsGeneric[NonCCA]
+    val genB = IsGeneric[NonCCB]
+    val genAbs = IsGeneric[AbstractNonCC]
 
     val rA = genA.to(ncca)
     assertTypedEquals[Int :: String :: HNil](23 :: "foo" :: HNil, rA)
@@ -417,7 +417,7 @@ class GenericTests {
   def testNonCCWithCompanion {
     val nccc = NonCCWithCompanion(23, "foo")
 
-    val gen = Generic[NonCCWithCompanion]
+    val gen = IsGeneric[NonCCWithCompanion]
 
     val r = gen.to(nccc)
     assertTypedEquals[Int :: String :: HNil](23 :: "foo" :: HNil, r)
@@ -433,7 +433,7 @@ class GenericTests {
     lazy val (a: NonCCLazy, b: NonCCLazy, c: NonCCLazy) =
       (new NonCCLazy(c, b), new NonCCLazy(a, c), new NonCCLazy(b, a))
 
-    val gen = Generic[NonCCLazy]
+    val gen = IsGeneric[NonCCLazy]
 
     val rB = gen.to(b)
     assertTypedEquals[NonCCLazy :: NonCCLazy :: HNil](a :: c :: HNil, rB)
@@ -449,7 +449,7 @@ class GenericTests {
   }
 
   trait Child extends Parent {
-    val gen = Generic[Nested]
+    val gen = IsGeneric[Nested]
   }
 
   object O extends Child
@@ -470,27 +470,27 @@ class GenericTests {
     import union._
     
     type L = Int :: String :: HNil
-    Generic[L]
+    IsGeneric[L]
     illTyped(" LabelledGeneric[L] ")
-    NonLabelledGeneric[L]
-    LooseLabelledGeneric[L]
+    IsNonLabelledGeneric[L]
+    IsLooseLabelledGeneric[L]
 
     type T = (Int, String)
-    Generic[T]
+    IsGeneric[T]
     illTyped(" LabelledGeneric[T] ")
-    NonLabelledGeneric[T]
-    LooseLabelledGeneric[T]
+    IsNonLabelledGeneric[T]
+    IsLooseLabelledGeneric[T]
 
     type R = Record.`i: Int, s: String`.T
-    Generic[R]
-    LabelledGeneric[R]
+    IsGeneric[R]
+    IsLabelledGeneric[R]
     illTyped(" NonLabelledGeneric[R] ")
-    LooseLabelledGeneric[R]
+    IsLooseLabelledGeneric[R]
 
     type U = Union.`i: Int, s: String`.T
-    Generic[U]
-    LabelledGeneric[U]
+    IsGeneric[U]
+    IsLabelledGeneric[U]
     illTyped(" NonLabelledGeneric[U] ")
-    LooseLabelledGeneric[U]
+    IsLooseLabelledGeneric[U]
   }
 }

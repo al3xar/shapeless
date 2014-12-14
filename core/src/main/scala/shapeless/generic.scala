@@ -21,56 +21,56 @@ import scala.language.experimental.macros
 import scala.annotation.StaticAnnotation
 import scala.reflect.macros.whitebox
 
-trait Generic[T] {
+trait IsGeneric[T] {
   type Repr
   def to(t : T) : Repr
   def from(r : Repr) : T
 }
 
-object Generic {
-  type Aux[T, Repr0] = Generic[T] { type Repr = Repr0 }
+object IsGeneric {
+  type Aux[T, Repr0] = IsGeneric[T] { type Repr = Repr0 }
 
-  def apply[T](implicit gen: Generic[T]): Aux[T, gen.Repr] = gen
+  def apply[T](implicit gen: IsGeneric[T]): Aux[T, gen.Repr] = gen
 
   implicit def materialize[T, R]: Aux[T, R] = macro GenericMacros.materialize[T, R]
   
-  def debug[T]: Generic[T] = macro GenericMacros.materializeDebug[T]
+  def debug[T]: IsGeneric[T] = macro GenericMacros.materializeDebug[T]
 }
 
-trait LabelledGeneric[T] extends Generic[T]
+trait IsLabelledGeneric[T] extends IsGeneric[T]
 
-object LabelledGeneric {
-  type Aux[T, Repr0] = LabelledGeneric[T]{ type Repr = Repr0 }
+object IsLabelledGeneric {
+  type Aux[T, Repr0] = IsLabelledGeneric[T]{ type Repr = Repr0 }
 
-  def apply[T](implicit lgen: LabelledGeneric[T]): Aux[T, lgen.Repr] = lgen
+  def apply[T](implicit lgen: IsLabelledGeneric[T]): Aux[T, lgen.Repr] = lgen
 
   implicit def materialize[T, R]: Aux[T, R] = macro GenericMacros.materializeLabelled[T, R]
 
-  def debug[T]: LabelledGeneric[T] = macro GenericMacros.materializeLabelledDebug[T]
+  def debug[T]: IsLabelledGeneric[T] = macro GenericMacros.materializeLabelledDebug[T]
 }
 
-trait NonLabelledGeneric[T] extends Generic[T]
+trait IsNonLabelledGeneric[T] extends IsGeneric[T]
 
-object NonLabelledGeneric {
-  type Aux[T, Repr0] = NonLabelledGeneric[T]{ type Repr = Repr0 }
+object IsNonLabelledGeneric {
+  type Aux[T, Repr0] = IsNonLabelledGeneric[T]{ type Repr = Repr0 }
 
-  def apply[T](implicit gen: NonLabelledGeneric[T]): Aux[T, gen.Repr] = gen
+  def apply[T](implicit gen: IsNonLabelledGeneric[T]): Aux[T, gen.Repr] = gen
 
   implicit def materialize[T, R]: Aux[T, R] = macro GenericMacros.materializeNonLabelled[T, R]
 
-  def debug[T]: NonLabelledGeneric[T] = macro GenericMacros.materializeNonLabelledDebug[T]
+  def debug[T]: IsNonLabelledGeneric[T] = macro GenericMacros.materializeNonLabelledDebug[T]
 }
 
-trait LooseLabelledGeneric[T] extends Generic[T]
+trait IsLooseLabelledGeneric[T] extends IsGeneric[T]
 
-object LooseLabelledGeneric {
-  type Aux[T, Repr0] = LooseLabelledGeneric[T]{ type Repr = Repr0 }
+object IsLooseLabelledGeneric {
+  type Aux[T, Repr0] = IsLooseLabelledGeneric[T]{ type Repr = Repr0 }
 
-  def apply[T](implicit lgen: LooseLabelledGeneric[T]): Aux[T, lgen.Repr] = lgen
+  def apply[T](implicit lgen: IsLooseLabelledGeneric[T]): Aux[T, lgen.Repr] = lgen
 
   implicit def materialize[T, R]: Aux[T, R] = macro GenericMacros.materializeLooseLabelled[T, R]
 
-  def debug[T]: LooseLabelledGeneric[T] = macro GenericMacros.materializeLooseLabelledDebug[T]
+  def debug[T]: IsLooseLabelledGeneric[T] = macro GenericMacros.materializeLooseLabelledDebug[T]
 }
 
 class nonGeneric extends StaticAnnotation
@@ -177,10 +177,10 @@ class GenericMacros(val c: whitebox.Context) {
     val helper = new Helper(tpe, false, labelled, labelled)
 
     def genericTpe = (labelled, strict) match {
-      case ( true, true ) => typeOf[LabelledGeneric[_]].typeConstructor
-      case (false, true ) => typeOf[NonLabelledGeneric[_]].typeConstructor
-      case ( true, false) => typeOf[LooseLabelledGeneric[_]].typeConstructor
-      case (false, false) => typeOf[Generic[_]].typeConstructor
+      case ( true, true ) => typeOf[IsLabelledGeneric[_]].typeConstructor
+      case (false, true ) => typeOf[IsNonLabelledGeneric[_]].typeConstructor
+      case ( true, false) => typeOf[IsLooseLabelledGeneric[_]].typeConstructor
+      case (false, false) => typeOf[IsGeneric[_]].typeConstructor
     }
     
     def labelErrorMsg = if (labelled) s"$tpe has no labels" else s"$tpe is a labelled type"

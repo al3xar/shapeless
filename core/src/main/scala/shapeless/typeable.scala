@@ -300,7 +300,7 @@ class TypeableMacros(val c: blackbox.Context) extends bootstrap.SingletonTypeUti
     val tpe = weakTypeOf[T]
 
     val typeableTpe = typeOf[Typeable[_]].typeConstructor
-    val genericTpe = typeOf[Generic[_]].typeConstructor
+    val genericTpe = typeOf[IsGeneric[_]].typeConstructor
     val AC = definitions.AnyClass
     val NC = definitions.NothingClass
 

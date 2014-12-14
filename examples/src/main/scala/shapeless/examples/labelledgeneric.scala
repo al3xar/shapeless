@@ -31,8 +31,8 @@ object LabelledGenericExamples extends App {
   case class Book(author: String, title: String, id: Int, price: Double)
   case class ExtendedBook(author: String, title: String, id: Int, price: Double, inPrint: Boolean)
 
-  val bookGen = LabelledGeneric[Book]
-  val bookExtGen = LabelledGeneric[ExtendedBook]
+  val bookGen = IsLabelledGeneric[Book]
+  val bookExtGen = IsLabelledGeneric[ExtendedBook]
 
   val tapl = Book("Benjamin Pierce", "Types and Programming Languages", 262162091, 44.11)
 
@@ -56,7 +56,7 @@ object LabelledGenericExamples extends App {
   // internationalization Shapeless style?
   case class Libro(autor: String, `título`: String, id: Int, precio: Double)
 
-  val libroGen = LabelledGeneric[Libro]
+  val libroGen = IsLabelledGeneric[Libro]
   val libroKeys = Keys[libroGen.Repr]
   val libroRec = rec.values.zipWithKeys(libroKeys())
   val libro = libroGen.from(libroRec) // static type is Libro
@@ -89,8 +89,8 @@ object OldWineNewBottles extends App {
 
   val from = From("foo", "bar")
 
-  val fromGen = LabelledGeneric[From]
-  val toGen = LabelledGeneric[To]
+  val fromGen = IsLabelledGeneric[From]
+  val toGen = IsLabelledGeneric[To]
 
   // Define the type of the i field by example
   val iField = Field('i ->> 0)

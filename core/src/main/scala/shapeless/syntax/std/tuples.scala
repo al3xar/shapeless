@@ -36,7 +36,7 @@ final class TupleOps[T](t: T) {
   /**
    * Returns an `HList` containing the elements of this tuple.
    */
-  def productElements(implicit gen: Generic[T]): gen.Repr = gen.to(t)
+  def productElements(implicit gen: IsGeneric[T]): gen.Repr = gen.to(t)
 
   /**
    * Returns the first element of this tuple.

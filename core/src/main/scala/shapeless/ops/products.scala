@@ -28,7 +28,7 @@ object product {
     type Aux[T, Out0 <: Nat] = ProductLength[T] { type Out = Out0 }
     
     implicit def length[T, L <: HList]
-      (implicit gen: Generic.Aux[T, L], length: Length[L]): Aux[T, length.Out] =
+      (implicit gen: IsGeneric.Aux[T, L], length: Length[L]): Aux[T, length.Out] =
         new ProductLength[T] {
           type Out = length.Out
           def apply(t: T): Out = length()

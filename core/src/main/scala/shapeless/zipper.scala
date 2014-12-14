@@ -94,6 +94,6 @@ case class Zipper[C, L <: HList, R <: HList, P](prefix : L, suffix : R, parent :
 }
 
 object Zipper {
-  def apply[C, CL <: HList](c : C)(implicit gen : Generic.Aux[C, CL]) : Zipper[C, HNil, CL, None.type] =
+  def apply[C, CL <: HList](c : C)(implicit gen : IsGeneric.Aux[C, CL]) : Zipper[C, HNil, CL, None.type] =
     Zipper[C, HNil, CL, None.type](HNil, gen.to(c), None)
 }

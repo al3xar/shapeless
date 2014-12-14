@@ -23,5 +23,5 @@ object zipper {
 
 /** Enhances values of any type with a representation via `Generic` with a method supporting conversion to a `Zipper`. */
 class ZipperOps[C](c : C) {
-  def toZipper[CL <: HList](implicit gen : Generic.Aux[C, CL]) = Zipper(c)
+  def toZipper[CL <: HList](implicit gen : IsGeneric.Aux[C, CL]) = Zipper(c)
 }

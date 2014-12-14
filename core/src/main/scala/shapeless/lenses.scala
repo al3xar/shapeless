@@ -104,11 +104,11 @@ trait ProductLensBuilder[C, P <: Product] extends Lens[C, P] {
   outer =>
   def ~[T, L <: HList, LT <: HList, Q <: Product, QL <: HList](other: Lens[C, T])
     (implicit
-      genp: Generic.Aux[P, L],
+      genp: IsGeneric.Aux[P, L],
       tpp: Tupler.Aux[L, P],
       pre: Prepend.Aux[L, T :: HNil, LT],
       tpq: Tupler.Aux[LT, Q],
-      genq: Generic.Aux[Q, QL],
+      genq: IsGeneric.Aux[Q, QL],
       init: Init.Aux[QL, L],
       last: Last.Aux[QL, T]) =
       new ProductLensBuilder[C, Q] {
@@ -124,11 +124,11 @@ trait ProductPrismBuilder[C, P <: Product] extends Prism[C, P] {
   outer =>
   def ~[T, L <: HList, LT <: HList, Q <: Product, QL <: HList](other: Prism[C, T])
     (implicit
-      genp: Generic.Aux[P, L],
+      genp: IsGeneric.Aux[P, L],
       tpp: Tupler.Aux[L, P],
       pre: Prepend.Aux[L, T :: HNil, LT],
       tpq: Tupler.Aux[LT, Q],
-      genq: Generic.Aux[Q, QL],
+      genq: IsGeneric.Aux[Q, QL],
       init: Init.Aux[QL, L],
       last: Last.Aux[QL, T]) =
       new ProductPrismBuilder[C, Q] {
@@ -282,7 +282,7 @@ object InferProduct {
   type Aux[C <: Coproduct, K, P] = InferProduct[C, K] { type Prod = P }
 
   implicit def inferProduct1[P, R <: HList, T <: Coproduct, K]
-    (implicit gen: LabelledGeneric.Aux[P, R], sel: RSelector[R, K]): Aux[P :+: T, K, P] =
+    (implicit gen: IsLabelledGeneric.Aux[P, R], sel: RSelector[R, K]): Aux[P :+: T, K, P] =
       new InferProduct[P :+: T, K] {
         type Prod = P
       }
@@ -303,7 +303,7 @@ trait LowPriorityMkSelectDynamicOptic {
 
   implicit def mkInferCtorSelField[R, A, C <: Coproduct, I, K, E]
     (implicit
-      gen: Generic.Aux[A, C],
+      gen: IsGeneric.Aux[A, C],
       infer: InferProduct.Aux[C, K, I],
       mkCSel: MkCtorPrism[A, I],
       mkPSel: MkFieldLens.Aux[I, K, E],
@@ -356,7 +356,7 @@ trait MkGenericLens[T] {
 object MkGenericLens {
   type Aux[T, Repr0] = MkGenericLens[T] { type Repr = Repr0 }
 
-  implicit def mkGenericLens[T](implicit gen: Generic[T]): Aux[T, gen.Repr] =
+  implicit def mkGenericLens[T](implicit gen: IsGeneric[T]): Aux[T, gen.Repr] =
     new MkGenericLens[T] {
       type Repr = gen.Repr
       def apply(): Lens[T, Repr] =
@@ -375,7 +375,7 @@ trait MkLabelledGenericLens[T] {
 object MkLabelledGenericLens {
   type Aux[T, Repr0] = MkLabelledGenericLens[T] { type Repr = Repr0 }
 
-  implicit def mkLabelledGenericLens[T](implicit gen: LabelledGeneric[T]): Aux[T, gen.Repr] =
+  implicit def mkLabelledGenericLens[T](implicit gen: IsLabelledGeneric[T]): Aux[T, gen.Repr] =
     new MkLabelledGenericLens[T] {
       type Repr = gen.Repr
       def apply(): Lens[T, Repr] =
@@ -472,7 +472,7 @@ trait LowPriorityMkPathOptic {
   implicit def mkCoselSelPathOptic[S, P <: HList, K, A, C <: Coproduct, I, E, R]
     (implicit
       mkPrefix: Aux[S, P, R, A],
-      gen: Generic.Aux[A, C],
+      gen: IsGeneric.Aux[A, C],
       infer: InferProduct.Aux[C, K, I],
       mkPrism: MkCtorPrism[A, I],
       mkLens: MkFieldLens.Aux[I, K, E],

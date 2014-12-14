@@ -49,7 +49,7 @@ trait LowPriorityData {
    *
    * The use of a macro here is essential to support resolution of recursive references.
    */
-  implicit def genericData[F <: Poly, T, R, U](implicit gen : Generic.Aux[T, R]): Data[F, T, U] =
+  implicit def genericData[F <: Poly, T, R, U](implicit gen : IsGeneric.Aux[T, R]): Data[F, T, U] =
     macro DataMacros.genericDataImpl[F, T, R, U]
 }
 
@@ -90,7 +90,7 @@ object Data extends LowPriorityData {
 
 object DataMacros {
   def genericDataImpl[F: c.WeakTypeTag, T: c.WeakTypeTag, R: c.WeakTypeTag, U: c.WeakTypeTag]
-    (c: blackbox.Context)(gen: c.Expr[Generic.Aux[T, R]]): c.Tree = {
+    (c: blackbox.Context)(gen: c.Expr[IsGeneric.Aux[T, R]]): c.Tree = {
     import c.universe._
 
     val hlistTpe = typeOf[HList]
@@ -176,7 +176,7 @@ trait LowPriorityDataT {
    *
    * The use of a macro here is essential to support resolution of recursive references.
    */
-  implicit def genericDataT[F <: Poly, T, R](implicit gen : Generic.Aux[T, R]): DataT[F, T, T] =
+  implicit def genericDataT[F <: Poly, T, R](implicit gen : IsGeneric.Aux[T, R]): DataT[F, T, T] =
     macro DataTMacros.genericDataTImpl[F, T, R]
 }
 
@@ -220,7 +220,7 @@ object DataT extends LowPriorityDataT {
 
 object DataTMacros {
   def genericDataTImpl[F: c.WeakTypeTag, T: c.WeakTypeTag, R: c.WeakTypeTag]
-    (c: blackbox.Context)(gen: c.Expr[Generic.Aux[T, R]]): c.Tree = {
+    (c: blackbox.Context)(gen: c.Expr[IsGeneric.Aux[T, R]]): c.Tree = {
     import c.universe._
 
     val hlistTpe = typeOf[HList]
@@ -286,7 +286,7 @@ class EverythingAux[F, K] extends Poly
 
 trait LowPriorityEverythingAux {
   implicit def generic[E, F <: Poly, K <: Poly, T, G, R]
-    (implicit unpack: Unpack2[E, EverythingAux, F, K], f : Case1.Aux[F, T, R], gen: Generic.Aux[T, G], data : Data[E, G, R], k : Case2.Aux[K, R, R, R]) =
+    (implicit unpack: Unpack2[E, EverythingAux, F, K], f : Case1.Aux[F, T, R], gen: IsGeneric.Aux[T, G], data : Data[E, G, R], k : Case2.Aux[K, R, R, R]) =
       Case1[E, T, R](t => data.gmapQ(gen.to(t)).foldLeft(f(t))(k))
 }
 
@@ -300,7 +300,7 @@ class EverywhereAux[F] extends Poly
 
 trait LowPriorityEverywhereAux {
   implicit def generic[E, F <: Poly, T, G]
-    (implicit unpack: Unpack1[E, EverywhereAux, F], gen: Generic.Aux[T, G], data : DataT[E, G, G], f : Case1[F, T] = Case1[F, T, T](identity)): Case1[E, T] { type Result = f.Result } =
+    (implicit unpack: Unpack1[E, EverywhereAux, F], gen: IsGeneric.Aux[T, G], data : DataT[E, G, G], f : Case1[F, T] = Case1[F, T, T](identity)): Case1[E, T] { type Result = f.Result } =
       Case1[E, T, f.Result](t => f(gen.from(data.gmapT(gen.to(t)))))
 }
 

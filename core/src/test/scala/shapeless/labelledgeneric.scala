@@ -70,7 +70,7 @@ class LabelledGenericTests {
 
   @Test
   def testProductBasics {
-    val gen = LabelledGeneric[Book]
+    val gen = IsLabelledGeneric[Book]
 
     val b0 = gen.to(tapl)
     typed[BookRec](b0)
@@ -89,7 +89,7 @@ class LabelledGenericTests {
 
   @Test
   def testGet {
-    val gen = LabelledGeneric[Book]
+    val gen = IsLabelledGeneric[Book]
 
     val b0 = gen.to(tapl)
     
@@ -112,7 +112,7 @@ class LabelledGenericTests {
 
   @Test
   def testApply {
-    val gen = LabelledGeneric[Book]
+    val gen = IsLabelledGeneric[Book]
 
     val b0 = gen.to(tapl)
     
@@ -135,7 +135,7 @@ class LabelledGenericTests {
 
   @Test
   def testAt {
-    val gen = LabelledGeneric[Book]
+    val gen = IsLabelledGeneric[Book]
 
     val b0 = gen.to(tapl)
     
@@ -158,7 +158,7 @@ class LabelledGenericTests {
 
   @Test
   def testUpdated {
-    val gen = LabelledGeneric[Book]
+    val gen = IsLabelledGeneric[Book]
 
     val b0 = gen.to(tapl)
 
@@ -171,7 +171,7 @@ class LabelledGenericTests {
 
   @Test
   def testUpdateWith {
-    val gen = LabelledGeneric[Book]
+    val gen = IsLabelledGeneric[Book]
 
     val b0 = gen.to(tapl)
 
@@ -184,8 +184,8 @@ class LabelledGenericTests {
 
   @Test
   def testExtension {
-    val gen = LabelledGeneric[Book]
-    val gen2 = LabelledGeneric[ExtendedBook]
+    val gen = IsLabelledGeneric[Book]
+    val gen2 = IsLabelledGeneric[ExtendedBook]
 
     val b0 = gen.to(tapl)
     val b1 = b0 + ('inPrint ->> true)
@@ -199,7 +199,7 @@ class LabelledGenericTests {
   def testCoproductBasics {
     type TreeUnion = Union.`'Leaf -> Leaf, 'Node -> Node`.T
 
-    val gen = LabelledGeneric[Tree]
+    val gen = IsLabelledGeneric[Tree]
 
     val t = Node(Node(Leaf(1), Leaf(2)), Leaf(3))
     val gt = gen.to(t)
@@ -216,9 +216,9 @@ class LabelledGenericTests {
     type NonCCBRec = Record.`'b -> Boolean, 'd -> Double`.T
     type AbsUnion = Union.`'NonCCA -> NonCCA, 'NonCCB -> NonCCB`.T
 
-    val genA = LabelledGeneric[NonCCA]
-    val genB = LabelledGeneric[NonCCB]
-    val genAbs = LabelledGeneric[AbstractNonCC]
+    val genA = IsLabelledGeneric[NonCCA]
+    val genB = IsLabelledGeneric[NonCCB]
+    val genAbs = IsLabelledGeneric[AbstractNonCC]
 
     val rA = genA.to(ncca)
     assertTypedEquals[NonCCARec]('i ->> 23 :: 's ->> "foo" :: HNil, rA)
@@ -255,7 +255,7 @@ class LabelledGenericTests {
     val rec = ('i ->> 23) :: ('s ->> "foo") :: HNil
     type NonCCRec = Record.`'i -> Int, 's -> String`.T
 
-    val gen = LabelledGeneric[NonCCWithCompanion]
+    val gen = IsLabelledGeneric[NonCCWithCompanion]
 
     val r = gen.to(nccc)
     assertTypedEquals[NonCCRec](rec, r)
@@ -274,7 +274,7 @@ class LabelledGenericTests {
     val rec = 'prev ->> a :: 'next ->> c :: HNil
     type LazyRec = Record.`'prev -> NonCCLazy, 'next -> NonCCLazy`.T
 
-    val gen = LabelledGeneric[NonCCLazy]
+    val gen = IsLabelledGeneric[NonCCLazy]
 
     val rB = gen.to(b)
     assertTypedEquals[LazyRec](rec, rB)

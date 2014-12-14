@@ -29,5 +29,5 @@ object tupled extends Poly1 {
  * Higher ranked function which converts products to `HLists`. 
  */
 object productElements extends Poly1 {
-  implicit def caseProduct[P](implicit gen: Generic[P]) = at[P](p => gen.to(p))
+  implicit def caseProduct[P](implicit gen: IsGeneric[P]) = at[P](p => gen.to(p))
 }

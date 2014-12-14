@@ -31,8 +31,8 @@ trait ProductISOFacet extends CaseClassFacet {
   trait ProductISOOps {
     type Repr <: HList
     type P <: Product
-    val gen: Generic.Aux[C, Repr]
-    val pgen: Generic.Aux[P, Repr]
+    val gen: IsGeneric.Aux[C, Repr]
+    val pgen: IsGeneric.Aux[P, Repr]
 
     def toProduct(c: C): P = pgen.from(gen.to(c))
     def fromProduct(p: P): C = gen.from(pgen.to(p))
@@ -109,7 +109,7 @@ trait CopyFacet extends CaseClassFacet {
     type LRepr <: HList
     type CopyMerger[R <: HList] = Merger.Aux[LRepr, R, LRepr]
 
-    val lgen: LabelledGeneric.Aux[C, LRepr]
+    val lgen: IsLabelledGeneric.Aux[C, LRepr]
 
     def copy[R <: HList](c: C, rec: R)(implicit merger: CopyMerger[R]): C =
       lgen.from(lgen.to(c).merge(rec))
@@ -161,12 +161,12 @@ trait DefaultCaseClassDefns extends
 
   def Ops[Repr0 <: HList, LRepr0 <: HList, P0 <: Product, N <: Nat]
     (implicit
-      gen0: Generic.Aux[C, Repr0],
-      lgen0: LabelledGeneric.Aux[C, LRepr0],
+      gen0: IsGeneric.Aux[C, Repr0],
+      lgen0: IsLabelledGeneric.Aux[C, LRepr0],
       len: Length.Aux[Repr0, N],
       toInt: ToInt[N],
       tup: Tupler.Aux[Repr0, P0],
-      pgen0: Generic.Aux[P0, Repr0],
+      pgen0: IsGeneric.Aux[P0, Repr0],
       typ0: Typeable[C],
       tag0: ClassTag[C]
     ) =

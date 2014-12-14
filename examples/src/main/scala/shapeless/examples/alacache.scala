@@ -144,12 +144,12 @@ trait CachedCaseClassDefns extends
 
   def Ops[Repr0 <: HList, LRepr0 <: HList, P0 <: Product, N <: Nat]
     (implicit
-      gen0: Generic.Aux[C, Repr0],
-      lgen0: LabelledGeneric.Aux[C, LRepr0],
+      gen0: IsGeneric.Aux[C, Repr0],
+      lgen0: IsLabelledGeneric.Aux[C, LRepr0],
       len: Length.Aux[Repr0, N],
       toInt: ToInt[N],
       tup: Tupler.Aux[Repr0, P0],
-      pgen0: Generic.Aux[P0, Repr0],
+      pgen0: IsGeneric.Aux[P0, Repr0],
       typ0: Typeable[C],
       tag0: ClassTag[C]
     ) = {

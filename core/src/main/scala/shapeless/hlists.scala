@@ -52,7 +52,7 @@ object HList {
 
   def apply[T](t: T) = t :: HNil
   
-  def apply[P <: Product, L <: HList](p : P)(implicit gen: Generic.Aux[P, L]) : L = gen.to(p)
+  def apply[P <: Product, L <: HList](p : P)(implicit gen: IsGeneric.Aux[P, L]) : L = gen.to(p)
 
   /**
    * Produces a HList of length `N` filled with `elem`.

@@ -128,7 +128,7 @@ object zipper {
   trait Down[Z] extends DepFn1[Z]
 
   object Down {
-    implicit def down[C, L <: HList, RH, RT <: HList, P, RHL <: HList](implicit gen : Generic.Aux[RH, RHL]) =
+    implicit def down[C, L <: HList, RH, RT <: HList, P, RHL <: HList](implicit gen : IsGeneric.Aux[RH, RHL]) =
       new Down[Zipper[C, L, RH :: RT, P]] {
         type Out = Zipper[RH, HNil, RHL, Some[Zipper[C, L, RH :: RT, P]]]
         def apply(z : Zipper[C, L, RH :: RT, P]) = Zipper(HNil, gen.to(z.suffix.head), Some(z))
@@ -164,7 +164,7 @@ object zipper {
 
   trait LowPriorityPut {
     implicit def put[C, L <: HList, RH, RT <: HList, P, E, CL <: HList]
-      (implicit gen : Generic.Aux[C, CL], rp : ReversePrepend.Aux[L, E :: RT, CL]) =
+      (implicit gen : IsGeneric.Aux[C, CL], rp : ReversePrepend.Aux[L, E :: RT, CL]) =
         new Put[Zipper[C, L, RH :: RT, P], E] {
           type Out = Zipper[C, L, E :: RT, P]
           def apply(z : Zipper[C, L, RH :: RT, P], e : E) = Zipper(z.prefix, e :: z.suffix.tail, z.parent)
@@ -206,7 +206,7 @@ object zipper {
 
   object Reify {
     implicit def reify[C, L <: HList, R <: HList, P, CL <: HList]
-      (implicit gen : Generic.Aux[C, CL], rp : ReversePrepend.Aux[L, R, CL]) =
+      (implicit gen : IsGeneric.Aux[C, CL], rp : ReversePrepend.Aux[L, R, CL]) =
         new Reify[Zipper[C, L, R, P]] {
           type Out = C
           def apply(z : Zipper[C, L, R, P]) = gen.from(z.prefix reverse_::: z.suffix)

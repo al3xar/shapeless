@@ -28,12 +28,12 @@ final class ProductOps[P](p: P) {
   /**
    * Returns an `HList` containing the elements of this product.
    */
-  def toHList[L <: HList](implicit gen: Generic.Aux[P, L]): L = gen.to(p)
+  def toHList[L <: HList](implicit gen: IsGeneric.Aux[P, L]): L = gen.to(p)
 
   /**
    * Returns an record containing the elements of this labelled product.
    */
-  def toRecord[R <: HList](implicit gen: LabelledGeneric.Aux[P, R]): R = gen.to(p)
+  def toRecord[R <: HList](implicit gen: IsLabelledGeneric.Aux[P, R]): R = gen.to(p)
 
   /**
    * Compute the length of this product.
