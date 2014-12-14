@@ -1,235 +1,253 @@
-# shapeless: generic programming for Scala
+My shapeless *sandbox*, where I put my latest developments/attempts,
+prior to submitting PRs to the main shapeless repo if I think they
+are worth it.
 
-**shapeless** is a type class and dependent type based generic programming library for Scala. It had its origins in
-several talks by Miles Sabin ([@milessabin][milessabin]), given over the course of 2011, on implementing [scrap your
-boilerplate][syb] and [higher rank polymorphism][higherrank] in Scala. Since then it has evolved from being a resolutely
-experimental project into library which, while still testing the limits of what's possible in Scala, is being used
-widely in production systems wherever there are arities to be abstracted over and boilerplate to be scrapped. 
-
-[![Build Status](https://api.travis-ci.org/milessabin/shapeless.png?branch=master)](https://travis-ci.org/milessabin/shapeless)
-[![Stories in Ready](https://badge.waffle.io/milessabin/shapeless.png?label=Ready)](https://waffle.io/milessabin/shapeless)
-
-## Finding out more about the project
-
-A feature overview of shapeless-2.0.0 can be found [here][features200]. If you are upgrading from shapeless-1.2.4 you
-will find the [release notes][relnotes] and [migration guide][migration] useful.
-
-shapeless is part of the [typelevel][] family of projects along with [Scalaz][scalaz] and [Spire][spire]. It is an Open
-Source project under the Apache License v2, hosted on [github][source]. Binary artefacts are published to the [Sonatype
-OSS Repository Hosting service][sonatype] and synced to Maven Central.
-
-There is a [mailing list][group] for discussion around generic programming in Scala in general and shapeless in
-particular. You will also find many of the main shapeless contributors on IRC in the #shapeless channel on
-[freenode][irc]. Questions about shapeless are often asked and answered under the [shapeless tag on StackOverflow][so].
-Some articles on the implementation techniques can be found on [Miles's blog][blog], and Olivera, Moors and Odersky,
-[Type Classes as Object and Implicits][tcoi] is useful background material.
-
-Support for Scala 2.9.x is still available via the shapeless-1.2.4 release (feature overview [here][features124]). It
-isn't straightforward to bring the latest shapeless features to Scala versions which don't support implicit macros, and
-this release should be treated as a stopgap until you are able to move your project to Scala 2.11. It might, however, be
-feasible to backport some of the updates via a compiler plugin for Scala 2.9.x, and anyone interested in contributing or
-sponsoring such work should [get in touch](mailto:miles@milessabin.com).
-
-[features200]: https://github.com/milessabin/shapeless/wiki/Feature-overview:-shapeless-2.0.0
-[features124]: https://github.com/milessabin/shapeless/wiki/Feature-overview:-shapeless-1.2.4
-[relnotes]: https://github.com/milessabin/shapeless/wiki/Release-notes:-shapeless-2.0.0
-[migration]: https://github.com/milessabin/shapeless/wiki/Migration-guide:-shapeless-1.2.4-to-2.0.0 
-[milessabin]: https://twitter.com/milessabin
-[syb]: http://research.microsoft.com/en-us/um/people/simonpj/papers/hmap/
-[higherrank]: http://www.cs.rutgers.edu/~ccshan/cs252/usage.pdf
-[typelevel]: http://typelevel.org/
-[scalaz]: https://github.com/scalaz/scalaz
-[spire]: https://github.com/non/spire
-[tcoi]: http://ropas.snu.ac.kr/~bruno/papers/TypeClasses.pdf
-[source]: https://github.com/milessabin/shapeless
-[sonatype]: https://oss.sonatype.org/index.html#nexus-search;quick~shapeless
-[wiki]: https://github.com/milessabin/shapeless/wiki
-[group]: https://groups.google.com/group/shapeless-dev
-[so]: http://stackoverflow.com/questions/tagged/shapeless
-[irc]: http://freenode.net/
-[blog]: http://www.chuusai.com/blog
-
-## Participation
-
-The shapeless project supports the [Typelevel][typelevel] [code of conduct][codeofconduct] and wants all of its
-channels (mailing list, IRC, github, etc.) to be welcoming environments for everyone.
-
-Whilst shapeless is a somewhat "advanced" Scala library, it is a lot more approachable than many people think.
-Contributors are usually available to field questions, give advice and discuss ideas on [#shapeless][irc] and
-the [mailing list][group], and for people wanting to take their first steps at contributing we have a selection
-of open issues flagged up as being [good candidates to take on][lowhangingfruit]. No contribution is too small,
-and guidance is always available.
-
-[codeofconduct]: http://typelevel.org/conduct.html
-[lowhangingfruit]: https://github.com/milessabin/shapeless/issues?q=is%3Aopen+is%3Aissue+label%3A%22Low+hanging+fruit%22
-
-## Using shapeless
-
-Binary release artefacts are published to the [Sonatype OSS Repository Hosting service][sonatype] and synced to Maven
-Central. Snapshots of the master and scala-2.10.x branches are built using [Travis CI][ci] and automatically published
-to the Sonatype OSS Snapshot repository. To include the Sonatype repositories in your SBT build you should add,
-
+## Extra features
+### Straighforward literal value types
 ```scala
-resolvers ++= Seq(
-  Resolver.sonatypeRepo("releases"),
-  Resolver.sonatypeRepo("snapshots")
-)
+val i: Literal.`2`.T = 2
+val s: Literal.`"a"`.T = "a"
+illTyped(""" val i: Literal.`2`.T = 3 """)
 ```
 
-Please be aware that SBT 0.13.6 has an [issue][namehashing] related to its new name hashing feature which when
-compiling with shapeless might cause SBT to loop indefinitely consuming all heap. Workarounds are to move to an
-earlier (0.13.5) or later (0.13.7) SBT version or disable name hashing by adding,
-
+### Straightforward HList/Coproduct types made of literal value types
 ```scala
-incOptions := incOptions.value.withNameHashing(false)
+val l: Literals.`2, "a", true`.T = 2.narrow :: "a".narrow :: true.narrow :: HNil
+val c1 = Coproduct[Literals.`2, "a", true`.S](2.narrow)
+val c2 = Coproduct[Literals.`2, "a", true`.S]("a".narrow)
+val c3 = Coproduct[Literals.`2, "a", true`.S](true.narrow)
+illTyped(""" val i: Literals.`2, "a", true`.T = 2.narrow :: "b".narrow :: true.narrow :: HNil """)
 ```
 
-to your settings.
-
-[ci]: https://travis-ci.org/milessabin/shapeless
-
-### shapeless-2.0.0
-
-Builds are available for Scala 2.11.0 and later and for Scala 2.10.4.
-
+### Enhanced zipWithKeys method on records/unions
 ```scala
-// For Scala 2.11.4
-scalaVersion := "2.11.4"
-
-libraryDependencies ++= Seq(
-  "com.chuusai" %% "shapeless" % "2.0.0"
-)
+val l = "a" :: 2 :: false :: HNil
+val rec = l.zipWithKeys[Literals.`'s, 'i, 'b`.T]
+val c1 = Coproduct[String :+: Int :+: Boolean :+: CNil]("a")
+val u1 = c1.zipWithKeys[Literals.`'s, 'i, 'b`.T]
 ```
 
-For Scala 2.10.x you must specify a Scala version of at least 2.10.2, and add either `cross CrossVersion.full` or
-provide an explicit Scala version suffix to your shapeless dependency,
+### Bootstrapped build
+Some macros (the ones related to literals mainly)
+are built in a bootstrap project, so that they can be used in the library
+itself.
 
+### filterType methods instead of filter
+The `filter` and `filterNot` methods, for `HList`s and `Coproduct`s,
+that filter types, are renamed to `filterType` / `filterNotType`:
 ```scala
-// For Scala 2.10.x >= 2.10.2
-scalaVersion := "2.10.4"
-
-libraryDependencies ++= Seq(
-  "com.chuusai" % "shapeless_2.10.4" % "2.0.0"
-  // "com.chuusai" % "shapeless" % "2.0.0" cross CrossVersion.full  // Alternatively ...
-)
+val l = 2 :: "a" :: 0.0 :: HNil
+val filtered = l.filterType[Int]
+val filteredNot = l.filterNotType[String]
 ```
 
-Note that Scala 2.10.x releases are compatible with each other starting from 2.10.2, so a mismatch in minor versions
-above would be fine.
-
-### shapeless-2.1.0-SNAPSHOT
-
-Builds are available for Scala 2.11.0 and later and for Scala 2.10.4. The main line of development for
-shapeless 2.1.0 will be Scala 2.11.4 with Scala 2.10.x supported via the macro paradise compiler plugin.
-
+### Boolean-literal based filtering
 ```scala
-scalaVersion := "2.11.4"
-
-libraryDependencies ++= Seq(
-  "com.chuusai" %% "shapeless" % "2.1.0-SNAPSHOT" changing()
-)
-```
-
-Note that for Scala 2.10.4 you must provide an explicit Scala version suffix to your shapeless dependency,
-
-```scala
-scalaVersion := "2.10.4"
-
-libraryDependencies ++= Seq(
-  "com.chuusai" % "shapeless_2.10.4" % "2.1.0-SNAPSHOT" changing()
-)
-```
-
-### shapeless-1.2.4
-
-Builds are available for Scala 2.9, 2.10 and 2.11. If you are working with Scala 2.10.2 or later you should use
-shapeless-2.0.0 instead.
-
-If your project is built with Scala 2.9.3 or earlier, then you will need to specify the `-Ydependent-method-types`
-compiler flag,
-
-```scala
-scalaVersion := "2.9.3"
-
-scalacOptions += "-Ydependent-method-types"
-
-libraryDependencies ++= Seq(
-  "com.chuusai" %% "shapeless" % "1.2.4"
-)
-```
-
-This option isn't necessary or supported in Scala 2.10 and later, so you should omit it if you are building with
-Scala 2.10.2 or later,
-
-```scala
-scalaVersion := "2.10.4"
-
-libraryDependencies ++= Seq(
-  "com.chuusai" %% "shapeless" % "1.2.4"
-)
-```
-
-If you want to be able to support building relative to both 2.9.3 and 2.10 and later then you should use the 2.10.4
-configuration above and add the following,
- 
-```scala
-scalacOptions <++= scalaVersion map { version =>
-  val Some((major, minor)) = CrossVersion.partialVersion(version)
-  if (major < 2 || (major == 2 && minor < 10)) 
-    Seq("-Ydependent-method-types")
-  else Nil
+object atLeastTwo extends Poly1 {
+  implicit def upToOne[N <: Nat](implicit ev: N  < nat._2) = at[N](_ => False)
+  implicit def fromTwo[N <: Nat](implicit ev: nat._2 <= N) = at[N](_ => True)
 }
+
+val l = Nat(1) :: Nat(2) :: HNil
+val filtered = l.filter(atLeastTwo)
+```
+Features `filter` and `filterNot` for both `HList`s and `Coproduct`s.
+
+### filterKeys methods on record/union
+```scala
+object filter extends Poly1 {
+  implicit def i = at[Literal.`'i`.T](_ => True)
+  implicit def s = at[Literal.`'s`.T](_ => False)
+  implicit def b = at[Literal.`'b`.T](_ => True)
+}
+
+val r = Record(i = 23, s = "foo", b = true)
+val filtered = r.filterKeys(filter)
 ```
 
-which will set the `-Ydependent-method-types` compiler flag conditionally on the actual Scala version in use.
+### Simplified HNil definition
+No `HNil` trait, no distinction between `HNil` and `HNil.type`. Allows to simplify
+ `HNil` implicits definitions, typically:
+```scala
+implicit def hnilImpl: Aux[HNil, HNil] = new Impl[HNil] { ... }
+```
+instead of
+```scala
+implicit def hnilImpl[L <: HNil]: Aux[L, HNil] = new Impl[L] { ... }
+```
 
-## Building shapeless
+### toHList and toRecord methods on case classes
+```scala
+import syntax.std.product._
+case class Bar(i: Int, s: String)
+val bar = Bar(2, "b")
 
-shapeless is built with 0.13.7 or later. SBT 0.13.6 has an [issue][namehashing] related to its new name hashing
-feature which when compiling shapeless causes SBT to loop indefinitely consuming all heap. Workarounds are to move to
-an earlier or later SBT version or disable name hashing by adding,
+val l = bar.toHList // HList(2, "b")
+val rec = bar.toRecord // Record(i=2, s="b")
+```
+
+### Case-class like syntax for record and union types
+```scala
+type R = Record.`i: Int, s: String`.T
+// Instead of type R = Record.`'i -> Int, 's -> String`.T
+type U = Union.`i: Int, s: String`.T
+// Instead of type R = Union.`'i -> Int, 's -> String`.T
+```
+
+### Empty record/union types allowed
+```scala
+type R = Record.` `.T
+type U = Union.` `.T
+```
+
+### More precise Generic-like type classes
+- `LabelledGeneric` only accepts labelled types (no bare HList or tuples)
+
+- Added `NonLabelledGeneric` that only accepts *non* labelled types (bare HLists and tuples)
+
+- The former `LabelledGeneric` is now `LooseLabelledGeneric`
+
+- Added `IsTuple` and `IsCaseClass` generic-like type classes
+
+- Prefixed the `*Generic` type classes with `Is`
 
 ```scala
-incOptions := incOptions.value.withNameHashing(false)
+type L = Int :: String :: HNil
+IsGeneric[L]
+illTyped(" IsLabelledGeneric[L] ")
+IsNonLabelledGeneric[L]
+IsLooseLabelledGeneric[L]
+illTyped(" IsTuple[L] ")
+illTyped(" IsCaseClass[L] ")
+
+type T = (Int, String)
+IsGeneric[T]
+illTyped(" IsLabelledGeneric[T] ")
+IsNonLabelledGeneric[T]
+IsLooseLabelledGeneric[T]
+IsTuple[T]
+illTyped(" IsCaseClass[T] ")
+
+type R = Record.`i: Int, s: String`.T
+IsGeneric[R]
+IsLabelledGeneric[R]
+illTyped(" IsNonLabelledGeneric[R] ")
+IsLooseLabelledGeneric[R]
+illTyped(" IsTuple[R] ")
+illTyped(" IsCaseClass[R] ")
+
+type U = Union.`i: Int, s: String`.T
+IsGeneric[U]
+IsLabelledGeneric[U]
+illTyped(" IsNonLabelledGeneric[U] ")
+IsLooseLabelledGeneric[U]
+illTyped(" IsTuple[U] ")
+illTyped(" IsCaseClass[U] ")
+
+case class CC(i: Int, s: String)
+IsGeneric[CC]
+IsLabelledGeneric[CC]
+illTyped(" IsNonLabelledGeneric[CC] ")
+IsLooseLabelledGeneric[CC]
+illTyped(" IsTuple[CC] ")
+IsCaseClass[CC]
+
+sealed trait CP
+case class CPInt(i: Int) extends CP
+case class CPString(s: String) extends CP
+IsGeneric[CP]
+IsLabelledGeneric[CP]
+illTyped(" IsNonLabelledGeneric[CP] ")
+IsLooseLabelledGeneric[CP]
+illTyped(" IsTuple[CP] ")
+illTyped(" IsCaseClass[CP] ")
 ```
 
-to your settings.
+### Removed scarcely used or not recommended features
+- Removed the unused logical types `¬`, `∧`, `∨`, & others
 
-The master of shapeless branch is built with Scala 2.11.4 by default. To build with Scala 2.10.x you should check out
-the scala-2.10.x branch. As a general rule all new features and bugfixes are made against master and Scala 2.11.4 and
-merged into the scala-2.10.x branch with only the minimal changes needed for forwards compatibility.
+- Removed the unnecessary `<:!<` and `=:!=` types
 
-[namehashing]: https://github.com/sbt/sbt/issues/1640
+### Straightforward access to record/union fields
+Enabled direct `selectDynamic` access to record and union fields:
+```scala
+val r = Record(i=1, s="b")
+r.i
+r.s
 
-## Contributors
+type U = Union.`i: Int, s: String`.T
+val u = Union[U](i=1)
+u.i
+u.s
+```
 
-+ Alexandre Archambault <alexandre.archambault@gmail.com> [@alxarchambault](https://twitter.com/alxarchambault)
-+ Alois Cochard <alois.cochard@gmail.com> [@aloiscochard](https://twitter.com/aloiscochard)
-+ Ben Hutchison <brhutchison@gmail.com> [@ben_hutchison](https://twitter.com/ben_hutchison)
-+ Ben James <ben.james@guardian.co.uk> [@bmjames](https://twitter.com/bmjames)
-+ Brian McKenna <brian@brianmckenna.org> [@puffnfresh](https://twitter.com/puffnfresh)
-+ Chris Hodapp <clhodapp1@gmail.com> [@clhodapp](https://twitter.com/clhodapp)
-+ Cody Allen <ceedubs@gmail.com> [@fourierstrick](https://twitter.com/FouriersTrick)
-+ Dario Rexin <dario.rexin@r3-tech.de> [@evonox](https://twitter.com/evonox)
-+ George Leontiev <folone@gmail.com> [@folone](https://twitter.com/folone)
-+ Huw Giddens <hgiddens@gmail.com>
-+ Jason Zaugg <jzaugg@gmail.com> [@retronym](https://twitter.com/retronym)
-+ Johannes Rudolph <johannes.rudolph@gmail.com> [@virtualvoid](https://twitter.com/virtualvoid)
-+ Joni Freeman <joni.freeman@ri.fi> [@jonifreeman](https://twitter.com/jonifreeman)
-+ Julien Tournay <boudhevil@gmail.com> [@skaalf](https://twitter.com/skaalf)
-+ Kevin Wright <kev.lee.wright@gmail.com> [@thecoda](https://twitter.com/thecoda)
-+ Lars Hupel <lars.hupel@mytum.de> [@larsr_h](https://twitter.com/larsr_h)
-+ Mathias Doenitz <mathias@spray.io> [@sirthias](https://twitter.com/sirthias)
-+ Michael Donaghy <md401@srcf.ucam.org>
-+ Michael Pilquist <mpilquist@gmail.com> [@mpilquist](https://twitter.com/mpilquist)
-+ Miles Sabin <miles@milessabin.com> [@milessabin](https://twitter.com/milessabin)
-+ Nikolas Evangelopoulos <nikolas@jkl.gr> 
-+ Owein Reese <owreese@gmail.com> [@OweinReese](https://twitter.com/OweinReese)
-+ Paolo G. Giarrusso <p.giarrusso@gmail.com> [@blaisorblade](https://twitter.com/blaisorblade)
-+ Pascal Voitot <pascal.voitot.dev@gmail.com> [@mandubian](https://twitter.com/mandubian)
-+ Sam Halliday <sam.halliday@gmail.com> [@fommil](https://twitter.com/fommil)
-+ Stacy Curl <stacy.curl@gmail.com> [@stacycurl](https://twitter.com/stacycurl)
-+ Stephen Compall <scompall@nocandysw.com> [@S11001001](https://twitter.com/S11001001)
-+ Tom Switzer <thomas.switzer@gmail.com> [@tixxit](https://twitter.com/tixxit)
-+ Travis Brown <travisrobertbrown@gmail.com> [@travisbrown](https://twitter.com/travisbrown)
+### List-like toString method on HLists
+```scala
+scala> HList(1, "a").toString
+res0: String = HList(1, a)
+```
 
+### Conversion from  traversables to HLists/records/case classes
+```scala
+type R = Record.`i: Int, s: String`.T
+case class Bar(i: Int, s: String)
+
+val l = List(1, "b")
+l.toHList[Int :: String :: HNil] // Some(1 :: "b" :: HNil): Option[Int :: String :: HNil]
+l.toGeneric[Bar] // Some(Bar(1, "b")): Option[Bar]
+l.toGeneric[R] // Some(Record(i=1, s="b")): Option[R]
+```
+
+## TODO
+
+### Tuple-like access to HList and Coproduct elements
+```scala
+val l = 1 :: "b" :: HNil
+l._1
+l._2
+
+type C = Int :+: String :+: CNil
+val c = Coproduct[C]("b")
+c._1
+c._2
+```
+
+### Simpler syntax for HList and Coproduct types
+```scala
+type L = HList.`Int, String`.T
+val l: L = HList(1, "b")
+
+type C = Coproduct.`Int, String`.T
+val c = Coproduct[C](2)
+```
+
+### Straightforward conversion of case classes to standard collections
+```scala
+import syntax.std.product._
+case class Bar(i: Int, s: Double)
+val bar = Bar(2, 1.0)
+
+bar.to[IndexedSeq]     // IndexedSeq[AnyVal](1, 1.0)
+bar.toList             // List[AnyVal](2, 1.0)         
+bar.toList[Any]        // List[Any](2, 1.0)
+bar.toArray            // Array[AnyVal](2, 1.0)
+bar.toArray[Any]       // Array[Any](2, 1.0)
+bar.toMap              // Map[Symbol, AnyVal]('i -> 2, 's -> 1.0)
+bar.toMap[Symbol, Any] // Map[Symbol, Any]('i -> 2, 's -> 1.0)
+```
+
+### Conversion of maps to records/unions/case classes/sealed hierarchy
+```scala
+type R = Record.`i: Int, s: String`.T
+type U = Union.`i: Int, s: String`.T
+case class Bar(i: Int, s: String)
+
+val m = Map("i" -> 1, "s" -> "a")
+m.toRecord[R] // Some(Record(i=1, s="a")): Option[R]
+m.toLabelledGeneric[Bar] // Some(Bar(1, "a")): Option[Bar]
+
+Map("i" -> 1).toUnion[U] // Some(Union[U](i=1)): Option[U]
+Map("s" -> "a").toUnion[U] // Some(Union[U](s="a")): Option[U]
+```
+
+### IsSealedHierarchy generic-like type class
