@@ -121,7 +121,7 @@ class LabelledMacros(val c: whitebox.Context) {
       appliedType(fieldTypeTpe, List(keyTpe, valueTpe))
 
     val q"${tpeString: String}" = tpeSelector
-    val fields = tpeString.split(",").map(_.trim).map(_.split("->").flatMap(_.split(':')).map(_.trim)).map {
+    val fields = if (tpeString.trim.isEmpty) Array.empty[(Type, Type)] else tpeString.split(",").map(_.trim).map(_.split("->").flatMap(_.split(':')).map(_.trim)).map {
       case Array(_key, valueTpe) =>
         val key = 
           if (_key.nonEmpty && _key.head.isLetter && _key.forall(_.isLetterOrDigit))

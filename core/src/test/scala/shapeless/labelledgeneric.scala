@@ -286,6 +286,19 @@ class LabelledGenericTests {
   }
   
   @Test
+  def testEmptySyntax {
+    {
+      type R = Record.` `.T
+      implicitly[HNil =:= R]
+    }
+
+    {
+      type U = Union.` `.T
+      implicitly[CNil =:= U]
+    }
+  }
+  
+  @Test
   def testExtraSyntax {
     {
       type R = Record.`'i -> Int`.T
