@@ -27,7 +27,42 @@ import scala.reflect.macros.whitebox
  * 
  * @author Miles Sabin
  */
-sealed trait HList extends Product with Serializable
+sealed trait HList extends Product with Serializable {
+
+  def mkString(start: String, sep: String, end: String): String =
+    addString(new StringBuilder(), start, sep, end).toString
+
+  def mkString(sep: String): String = mkString("", sep, "")
+
+  def mkString: String = mkString("")
+
+  def addString(b: StringBuilder, start: String, sep: String, end: String): StringBuilder = {
+    @tailrec
+    def helper(l: HList, first: Boolean): Unit =
+      l match {
+        case h :: t =>
+          if (!first)
+            b append sep
+          
+          b append h
+          helper(t, first = false)
+        case HNil =>
+      }
+
+    b append start
+    helper(this, first = true)
+    b append end
+
+    b
+  }
+
+  def addString(b: StringBuilder, sep: String): StringBuilder = addString(b, "", sep, "")
+
+  def addString(b: StringBuilder): StringBuilder = addString(b, "")
+
+  override def toString = mkString("HList(", ", ", ")")
+
+}
 
 /**
  * Non-empty `HList` element type.
@@ -35,8 +70,6 @@ sealed trait HList extends Product with Serializable
  * @author Miles Sabin
  */
 final case class ::[+H, +T <: HList](head : H, tail : T) extends HList with Dynamic {
-  override def toString = head+" :: "+tail.toString
-
   import shapeless.tag.@@
   import ops.record.Selector
 
@@ -51,9 +84,7 @@ final case class ::[+H, +T <: HList](head : H, tail : T) extends HList with Dyna
  * 
  * @author Miles Sabin
  */
-case object HNilInstance extends HList {
-  override def toString = "HNil"
-}
+case object HNilInstance extends HList
 
 object HList extends Dynamic {
   import ops.hlist._
