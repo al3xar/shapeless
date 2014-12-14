@@ -23,16 +23,6 @@ package object shapeless {
     type λ[T] = C
   }
 
-  type ¬[T] = T => Nothing
-  type ¬¬[T] = ¬[¬[T]]
-  type ∧[T, U] = T with U
-  type ∨[T, U] = ¬[¬[T] ∧ ¬[U]]
-
-  // Type-lambda for context bound
-  type |∨|[T, U] = {
-    type λ[X] = ¬¬[X] <:< (T ∨ U)
-  }
-
   // Type inequalities
   trait =:!=[A, B]
 
@@ -45,15 +35,6 @@ package object shapeless {
   implicit def nsub[A, B] : A <:!< B = new <:!<[A, B] {}
   implicit def nsubAmbig1[A, B >: A] : A <:!< B = unexpected
   implicit def nsubAmbig2[A, B >: A] : A <:!< B = unexpected
-
-  // Type-lambda for context bound
-  type |¬|[T] = {
-    type λ[U] = U <:!< T
-  }
-
-  // Quantifiers
-  type ∃[P[_]] = P[T] forSome { type T }
-  type ∀[P[_]] = ¬[∃[({ type λ[X] = ¬[P[X]]})#λ]]
 
   /** `Optic` definitions */
   val optic = OpticDefns
