@@ -745,7 +745,7 @@ class RecordTests {
   val sSymbolWitness = Witness('s)
   val bSymbolWitness = Witness('b)
   
-  object filter extends FieldPoly {
+  object filter extends Poly1 {
     implicit def i = at[iSymbolWitness.T](_ => True)
     implicit def s = at[sSymbolWitness.T](_ => False)
     implicit def b = at[bSymbolWitness.T](_ => True)
