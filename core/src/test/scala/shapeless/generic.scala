@@ -465,7 +465,7 @@ class GenericTests {
   }
   
   @Test
-  def labelledIsStrict {
+  def strictNonStrictGenerics {
     import record._
     import union._
     
