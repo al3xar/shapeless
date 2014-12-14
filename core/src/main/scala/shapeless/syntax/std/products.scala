@@ -26,7 +26,7 @@ final class ProductOps[P](p: P) {
   import ops.product._
 
   /**
-   * Returns an `HList` containing the elements of this tuple.
+   * Returns an `HList` containing the elements of this product.
    */
   def toHList[L <: HList](implicit gen: Generic.Aux[P, L]): L = gen.to(p)
 
