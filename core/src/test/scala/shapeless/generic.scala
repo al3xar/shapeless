@@ -464,6 +464,14 @@ class GenericTests {
     assertEquals(n0, n1)
   }
   
+  case class CC(i: Int, s: String)
+  
+  sealed trait CP
+  // Adding the final keyword to CPInt and CPString gives a
+  //   "The outer reference in this type test cannot be checked at run time"
+  case class CPInt(i: Int) extends CP
+  case class CPString(s: String) extends CP
+  
   @Test
   def strictNonStrictGenerics {
     import record._
@@ -471,26 +479,36 @@ class GenericTests {
     
     type L = Int :: String :: HNil
     IsGeneric[L]
-    illTyped(" LabelledGeneric[L] ")
+    illTyped(" IsLabelledGeneric[L] ")
     IsNonLabelledGeneric[L]
     IsLooseLabelledGeneric[L]
 
     type T = (Int, String)
     IsGeneric[T]
-    illTyped(" LabelledGeneric[T] ")
+    illTyped(" IsLabelledGeneric[T] ")
     IsNonLabelledGeneric[T]
     IsLooseLabelledGeneric[T]
 
     type R = Record.`i: Int, s: String`.T
     IsGeneric[R]
     IsLabelledGeneric[R]
-    illTyped(" NonLabelledGeneric[R] ")
+    illTyped(" IsNonLabelledGeneric[R] ")
     IsLooseLabelledGeneric[R]
 
     type U = Union.`i: Int, s: String`.T
     IsGeneric[U]
     IsLabelledGeneric[U]
-    illTyped(" NonLabelledGeneric[U] ")
+    illTyped(" IsNonLabelledGeneric[U] ")
     IsLooseLabelledGeneric[U]
+    
+    IsGeneric[CC]
+    IsLabelledGeneric[CC]
+    illTyped(" IsNonLabelledGeneric[CC] ")
+    IsLooseLabelledGeneric[CC]
+
+    IsGeneric[CP]
+    IsLabelledGeneric[CP]
+    illTyped(" IsNonLabelledGeneric[CP] ")
+    IsLooseLabelledGeneric[CP]
   }
 }
