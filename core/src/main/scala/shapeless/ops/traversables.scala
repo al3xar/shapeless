@@ -40,6 +40,8 @@ object traversable {
   }
 
   object FromTraversable extends LowPriorityFromTraversable {
+    def apply[T](implicit fromTraversable: FromTraversable[T]): FromTraversable[T] = fromTraversable
+    
     implicit val hnilFromTraversable: FromTraversable[HNil] =
       new FromTraversable[HNil] {
         def apply(l: GenTraversable[Any]) =
