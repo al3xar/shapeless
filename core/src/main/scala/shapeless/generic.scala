@@ -85,6 +85,18 @@ object IsTuple {
   def debug[T]: IsTuple[T] = macro GenericMacros.materializeTupleDebug[T]
 }
 
+trait IsCaseClass[T] extends IsLabelledGeneric[T] { type Repr <: HList }
+
+object IsCaseClass {
+  type Aux[T, Repr0] = IsCaseClass[T] { type Repr = Repr0 }
+
+  def apply[T](implicit lgen: IsCaseClass[T]): Aux[T, lgen.Repr] = lgen
+
+  implicit def materialize[T, R]: Aux[T, R] = macro GenericMacros.materializeCaseClass[T, R]
+
+  def debug[T]: IsCaseClass[T] = macro GenericMacros.materializeCaseClassDebug[T]
+}
+
 class nonGeneric extends StaticAnnotation
 
 class GenericMacros(val c: whitebox.Context) {
@@ -238,6 +250,23 @@ class GenericMacros(val c: whitebox.Context) {
     val helper = new Helper(tpe, false, false, false)
 
     helper.materializeGeneric(typeOf[IsTuple[_]].typeConstructor)
+  }
+
+  def materializeCaseClass[T: WeakTypeTag, R: WeakTypeTag] =
+    materializeCaseClassAux(weakTypeOf[T])
+
+  def materializeCaseClassDebug[T: WeakTypeTag] =
+    materializeCaseClassAux(weakTypeOf[T])
+
+  def materializeCaseClassAux(tpe: Type): Tree = {
+    import c.typeOf
+
+    val helper = new Helper(tpe, false, true, true)
+
+    if (isTupleType(tpe) || tpe <:< typeOf[HList] || !helper.fromSym.isCaseClass)
+      c.error(c.enclosingPosition, s"$tpe is not a case class")
+
+    helper.materializeGeneric(typeOf[IsCaseClass[_]].typeConstructor)
   }
 
   def deriveProductInstance[C[_], T](ev: Tree)(implicit tTag: WeakTypeTag[T], cTag: WeakTypeTag[C[Any]]) =

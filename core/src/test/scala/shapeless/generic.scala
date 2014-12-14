@@ -485,12 +485,14 @@ class GenericTests {
     IsNonLabelledGeneric[HNil]
     IsLooseLabelledGeneric[HNil]
     illTyped(" IsTuple[HNil] ")
+    illTyped(" IsCaseClass[HNil] ")
 
     IsGeneric[Unit]
     illTyped(" IsLabelledGeneric[Unit] ")
     IsNonLabelledGeneric[Unit]
     IsLooseLabelledGeneric[Unit]
     IsTuple[Unit]
+    illTyped(" IsCaseClass[Unit] ")
 
     type L = Int :: String :: HNil
     IsGeneric[L]
@@ -498,6 +500,7 @@ class GenericTests {
     IsNonLabelledGeneric[L]
     IsLooseLabelledGeneric[L]
     illTyped(" IsTuple[L] ")
+    illTyped(" IsCaseClass[L] ")
 
     type T = (Int, String)
     IsGeneric[T]
@@ -505,6 +508,7 @@ class GenericTests {
     IsNonLabelledGeneric[T]
     IsLooseLabelledGeneric[T]
     IsTuple[T]
+    illTyped(" IsCaseClass[T] ")
 
     type R = Record.`i: Int, s: String`.T
     IsGeneric[R]
@@ -512,6 +516,7 @@ class GenericTests {
     illTyped(" IsNonLabelledGeneric[R] ")
     IsLooseLabelledGeneric[R]
     illTyped(" IsTuple[R] ")
+    illTyped(" IsCaseClass[R] ")
 
     type U = Union.`i: Int, s: String`.T
     IsGeneric[U]
@@ -519,30 +524,35 @@ class GenericTests {
     illTyped(" IsNonLabelledGeneric[U] ")
     IsLooseLabelledGeneric[U]
     illTyped(" IsTuple[U] ")
+    illTyped(" IsCaseClass[U] ")
 
-    // FIXME These should compile
+    // FIXME The commented out tests should compile (and the failing ones should fail for other reasons)
     // IsGeneric[CO.type]
     // IsLabelledGeneric[CO.type]
     illTyped(" IsNonLabelledGeneric[CO.type] ")
     // IsLooseLabelledGeneric[CO.type]
     illTyped(" IsTuple[CO.type] ")
+    // IsCaseClass[CO.type]
 
     IsGeneric[EmptyCC]
     IsLabelledGeneric[EmptyCC]
     illTyped(" IsNonLabelledGeneric[EmptyCC] ")
     IsLooseLabelledGeneric[EmptyCC]
     illTyped(" IsTuple[EmptyCC] ")
+    IsCaseClass[EmptyCC]
     
     IsGeneric[CC]
     IsLabelledGeneric[CC]
     illTyped(" IsNonLabelledGeneric[CC] ")
     IsLooseLabelledGeneric[CC]
     illTyped(" IsTuple[CC] ")
+    IsCaseClass[CC]
 
     IsGeneric[CP]
     IsLabelledGeneric[CP]
     illTyped(" IsNonLabelledGeneric[CP] ")
     IsLooseLabelledGeneric[CP]
     illTyped(" IsTuple[CP] ")
+    illTyped(" IsCaseClass[CP] ")
   }
 }
