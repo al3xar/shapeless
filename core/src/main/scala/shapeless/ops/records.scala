@@ -79,10 +79,10 @@ package record {
   object Updater extends LowPriorityUpdater {
     def apply[L <: HList, F](implicit updater: Updater[L, F]): Aux[L, F, updater.Out] = updater
 
-    implicit def hnilUpdater[L <: HNil, F]: Aux[L, F, F :: HNil] =
-      new Updater[L, F] {
+    implicit def hnilUpdater[F]: Aux[HNil, F, F :: HNil] =
+      new Updater[HNil, F] {
         type Out = F :: HNil
-        def apply(l: L, f: F): Out = f :: HNil
+        def apply(l: HNil, f: F): Out = f :: HNil
       }
 
     implicit def hlistUpdater2[K, V, T <: HList]: Aux[FieldType[K, V] :: T, FieldType[K, V], FieldType[K, V] :: T] =
