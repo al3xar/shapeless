@@ -122,7 +122,7 @@ object PolyDefns extends Cases {
   }
 
   trait LowPriorityLiftFunction1 extends Poly1 {
-    implicit def default[T] = at[T](_ => HNil : HNil)
+    implicit def default[T] = at[T](_ => HNil)
   }
 
   /**

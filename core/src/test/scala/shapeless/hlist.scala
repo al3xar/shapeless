@@ -213,7 +213,7 @@ class HListTests {
     assertTypedEquals[Int :: Int :: String :: String :: Boolean :: Boolean :: HNil](
       1 :: 1 :: "foo" :: "foo" :: true :: true :: HNil, l2)
 
-    val l3 = (1 :: "foo" :: HNil) :: (HNil : HNil) :: (2.0 :: true :: HNil) :: ("bar" :: HNil) :: HNil
+    val l3 = (1 :: "foo" :: HNil) :: HNil :: (2.0 :: true :: HNil) :: ("bar" :: HNil) :: HNil
 
     val l4 = l3 flatMap identity
     assertTypedEquals[Int :: String :: Double :: Boolean :: String :: HNil](
