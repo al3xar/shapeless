@@ -108,4 +108,9 @@ package object shapeless {
   val True: True = Witness.Boolean.witnessTrue.value
   val False: False = Witness.Boolean.witnessFalse.value
 
+  /**
+   * Empty `HList` element type.
+   */
+  type HNil = HNil.type 
+  
 }

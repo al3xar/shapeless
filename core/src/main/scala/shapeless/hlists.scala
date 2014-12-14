@@ -35,21 +35,14 @@ final case class ::[+H, +T <: HList](head : H, tail : T) extends HList {
 }
 
 /**
- * Empty `HList` element type.
- * 
- * @author Miles Sabin
- */
-sealed trait HNil extends HList {
-  def ::[H](h : H) = shapeless.::(h, this)
-  override def toString = "HNil"
-}
-
-/**
  * Empty `HList` value.
  * 
  * @author Miles Sabin
  */
-case object HNil extends HNil
+case object HNil extends HList {
+  def ::[H](h : H) = shapeless.::(h, this)
+  override def toString = "HNil"
+}
 
 object HList {
   import ops.hlist._
