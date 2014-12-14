@@ -340,7 +340,7 @@ class HListTests {
     val b5 = l.align[M5]
     assertTypedEquals[M5](true :: "foo" :: 23 :: HNil, b5)
 
-    val c0 = (HNil: HNil).align[HNil]
+    val c0 = HNil.align[HNil]
     typed[HNil](c0)
 
     val c1 = (23 :: HNil).align[Int :: HNil]
@@ -350,7 +350,7 @@ class HListTests {
     typed[String :: Int :: HNil](c2)
 
     illTyped("""
-      (HNil: HNil).align[Int :: HNil]
+      HNil.align[Int :: HNil]
     """)
 
     illTyped("""
@@ -1857,15 +1857,15 @@ class HListTests {
     }
 
     // HNil zipWith HNil (emptyFn)
-    val r1 = (HNil: HNil).zipWith(HNil: HNil)(empty)
+    val r1 = HNil.zipWith(HNil)(empty)
     assertTypedEquals[HNil](HNil, r1)
 
     // HNil zipWith nonEmpty (emptyFn)
-    val r2 = (HNil: HNil).zipWith(1 :: HNil)(empty)
+    val r2 = HNil.zipWith(1 :: HNil)(empty)
     assertTypedEquals[HNil](HNil, r2)
 
     // nonEmpty zipWith HNil (emptyFn)
-    val r3 = (1 :: HNil).zipWith(HNil: HNil)(empty)
+    val r3 = (1 :: HNil).zipWith(HNil)(empty)
     assertTypedEquals[HNil](HNil, r3)
 
     // singleton zipWith singleton
@@ -1962,13 +1962,13 @@ class HListTests {
     val in: Int :: String :: Double :: HNil = 1 :: "foo" :: 2.2 :: HNil
 
     // HNil collect p
-    val r1 = (HNil: HNil).collect(empty)
+    val r1 = HNil.collect(empty)
     assertTypedEquals[HNil](HNil, r1)
 
-    val r2 = (HNil: HNil).collect(poly.identity)
+    val r2 = HNil.collect(poly.identity)
     assertTypedEquals[HNil](HNil, r2)
 
-    val r3 = (HNil: HNil).collect(complex)
+    val r3 = HNil.collect(complex)
     assertTypedEquals[HNil](HNil, r3)
 
     // non-HNil collect empty
@@ -1986,7 +1986,7 @@ class HListTests {
 
   @Test
   def testOrdering {
-    assertEquals(List(HNil: HNil, HNil), List(HNil: HNil, HNil).sorted)
+    assertEquals(List(HNil, HNil), List(HNil, HNil).sorted)
 
     assertEquals(List(1 :: HNil, 2 :: HNil, 3 :: HNil), List(2 :: HNil, 1 :: HNil, 3 :: HNil).sorted)
 
@@ -2000,7 +2000,7 @@ class HListTests {
   def testMapCons {
     type C = Char; type S = String; type I = Int; type D = Double
 
-    val r1 = (HNil: HNil).mapCons('a')
+    val r1 = HNil.mapCons('a')
     assertTypedEquals[HNil](HNil, r1)
 
     val r2 = (HNil :: HNil).mapCons('a')
