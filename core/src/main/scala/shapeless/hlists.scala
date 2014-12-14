@@ -52,7 +52,6 @@ final case class ::[+H, +T <: HList](head : H, tail : T) extends HList with Dyna
  * @author Miles Sabin
  */
 case object HNilInstance extends HList {
-  def ::[H](h : H) = shapeless.::(h, this)
   override def toString = "HNil"
 }
 
