@@ -116,27 +116,35 @@ class GenericMacros(val c: whitebox.Context) {
     } else
       false
 
-  def isLabelledTpe(tpe: Type, cons: Type, nil: Type): Boolean =
-    if (tpe <:< cons) {
-      import scala.::
+  def isLabelledTpe(tpe: Type, cons: Type, nil: Type): Option[Boolean] = {
+    def helper(tpe: Type): Boolean =
+      if (tpe <:< cons) {
+        import scala.::
       
-      tpe.dealias.typeArgs match {
-        case headTpe :: tailTpe :: Nil if isFieldTpe(headTpe) =>
-          isLabelledTpe(tailTpe, cons, nil)
-        case _ =>
-          false
-      }
-    } else
-      tpe <:< nil
+        tpe.dealias.typeArgs match {
+          case headTpe :: tailTpe :: Nil if isFieldTpe(headTpe) =>
+            helper(tailTpe)
+          case _ =>
+            false
+        }
+      } else
+        tpe <:< nil
 
-  def isRecordTpe(tpe: Type): Boolean =
+    if (tpe <:< cons)
+      Some(helper(tpe))
+    else
+      None
+  }
+
+  def isRecordTpe(tpe: Type): Option[Boolean] =
     isLabelledTpe(tpe, typeOf[::[_, _]], typeOf[HNil])
 
-  def isUnionTpe(tpe: Type): Boolean =
+  def isUnionTpe(tpe: Type): Option[Boolean] =
     isLabelledTpe(tpe, typeOf[:+:[_, _]], typeOf[CNil])
   
   def isTupleType(tpe: Type): Boolean =
-    tpe <:< typeOf[Tuple1[_]] ||
+    tpe <:< typeOf[Unit] ||
+      tpe <:< typeOf[Tuple1[_]] ||
       tpe <:< typeOf[(_, _)] ||
       tpe <:< typeOf[(_, _, _)] ||
       tpe <:< typeOf[(_, _, _, _)] ||
@@ -198,12 +206,12 @@ class GenericMacros(val c: whitebox.Context) {
     def labelErrorMsg = if (labelled) s"$tpe has no labels" else s"$tpe is a labelled type"
 
     if (tpe <:< typeOf[HList]) {
-      if (strict && (labelled != isRecordTpe(tpe)))
+      if (strict && isRecordTpe(tpe).exists(labelled != _))
         c.error(c.enclosingPosition, labelErrorMsg)
 
       helper.materializeIdentityGeneric(genericTpe)
     } else if (tpe <:< typeOf[Coproduct]) {
-      if (strict && (labelled != isUnionTpe(tpe)))  
+      if (strict && isUnionTpe(tpe).exists(labelled != _))  
         c.error(c.enclosingPosition, labelErrorMsg)
 
       helper.materializeIdentityGeneric(genericTpe)

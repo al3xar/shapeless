@@ -464,6 +464,9 @@ class GenericTests {
     assertEquals(n0, n1)
   }
   
+  case object CO
+  case class EmptyCC()
+
   case class CC(i: Int, s: String)
   
   sealed trait CP
@@ -477,6 +480,18 @@ class GenericTests {
     import record._
     import union._
     
+    IsGeneric[HNil]
+    IsLabelledGeneric[HNil]
+    IsNonLabelledGeneric[HNil]
+    IsLooseLabelledGeneric[HNil]
+    illTyped(" IsTuple[HNil] ")
+
+    IsGeneric[Unit]
+    illTyped(" IsLabelledGeneric[Unit] ")
+    IsNonLabelledGeneric[Unit]
+    IsLooseLabelledGeneric[Unit]
+    IsTuple[Unit]
+
     type L = Int :: String :: HNil
     IsGeneric[L]
     illTyped(" IsLabelledGeneric[L] ")
@@ -504,6 +519,19 @@ class GenericTests {
     illTyped(" IsNonLabelledGeneric[U] ")
     IsLooseLabelledGeneric[U]
     illTyped(" IsTuple[U] ")
+
+    // FIXME These should compile
+    // IsGeneric[CO.type]
+    // IsLabelledGeneric[CO.type]
+    illTyped(" IsNonLabelledGeneric[CO.type] ")
+    // IsLooseLabelledGeneric[CO.type]
+    illTyped(" IsTuple[CO.type] ")
+
+    IsGeneric[EmptyCC]
+    IsLabelledGeneric[EmptyCC]
+    illTyped(" IsNonLabelledGeneric[EmptyCC] ")
+    IsLooseLabelledGeneric[EmptyCC]
+    illTyped(" IsTuple[EmptyCC] ")
     
     IsGeneric[CC]
     IsLabelledGeneric[CC]
