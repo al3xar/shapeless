@@ -21,19 +21,20 @@ package std
 import scala.collection.GenTraversable
 
 /**
- * Conversions between `Traversables` and `HLists`.
+ * Conversions between `Traversables` and `HLists` or generic products.
  * 
- * The implicit defined by this object enhances `Traversables` with a `toHList` method which constructs an equivalently
- * typed [[shapeless.HList]] if possible. 
+ * The implicit defined by this object enhances `Traversables` with methods which construct an equivalently
+ * typed [[shapeless.HList]] or generic product if possible. 
  * 
- * @author Miles Sabin
+ * @author Miles Sabin, Alexandre Archambault
  */
 object traversable {
-  implicit def traversableOps[T <% GenTraversable[_]](t : T) = new TraversableOps(t)
+  implicit def traversableOps[T <% GenTraversable[_]](t : T): TraversableOps[T] = new TraversableOps(t)
 }
 
 final class TraversableOps[T <% GenTraversable[_]](t : T) {
   import ops.traversable._
 
-  def toHList[L <: HList](implicit fl : FromTraversable[L]) : Option[L] = fl(t)
+  def toHList[L <: HList](implicit fromTraversable: FromTraversable[L]): Option[L] = fromTraversable(t)
+  def toGeneric[P](implicit fromTraversable: FromTraversable[P]): Option[P] = fromTraversable(t)
 }

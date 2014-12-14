@@ -634,6 +634,44 @@ class GenericTests {
   def testCaseObjectsAndLazy {
     TC[Base1]
   }
+
+  case class EmptyCC()
+  case class CC(i: Int, s: String)
+
+  @Test
+  def testFromTraversable {
+    import syntax.std.traversable._
+
+    {
+      val l = List(1, "a")
+      val optCC = l.toGeneric[CC]
+      assertTypedEquals[Option[CC]](Option(CC(1, "a")), optCC)
+    }
+
+    {
+      val l = List(1, "a", true)
+      val optCC = l.toGeneric[CC]
+      assertTypedEquals[Option[CC]](None, optCC)
+    }
+
+    {
+      val l = Nil
+      val optCC = l.toGeneric[CC]
+      assertTypedEquals[Option[CC]](None, optCC)
+    }
+
+    {
+      val l = Nil
+      val optEmptyCC = l.toGeneric[EmptyCC]
+      assertTypedEquals[Option[EmptyCC]](Some(EmptyCC()), optEmptyCC)
+    }
+
+    {
+      val l = List("a")
+      val optEmptyCC = l.toGeneric[EmptyCC]
+      assertTypedEquals[Option[EmptyCC]](None, optEmptyCC)
+    }
+  }
 }
 
 package GenericTestsAux2 {

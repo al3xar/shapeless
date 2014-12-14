@@ -17,38 +17,53 @@
 package shapeless
 package ops
 
-import scala.collection.{ GenTraversable, GenTraversableLike }
+import scala.collection.GenTraversable
 
 object traversable {
   /**
-   * Type class supporting type safe conversion of `Traversables` to `HLists`. 
+   * Type class supporting type safe conversion of `Traversables` to `HLists` or generic products.
    * 
-   * @author Miles Sabin
+   * @author Miles Sabin, Alexandre Archambault
    */
-  trait FromTraversable[Out <: HList] extends Serializable {
-    def apply(l : GenTraversable[_]) : Option[Out]
+  trait FromTraversable[T] extends Serializable {
+    def apply(l: GenTraversable[Any]): Option[T]
   }
 
-  /**
-   * `FromTraversable` type class instances.
-   * 
-   * @author Miles Sabin
-   */
-  object FromTraversable {
+  trait LowPriorityFromTraversable {
+    implicit def projectGenericFromTraversable[F, G](implicit
+      gen: Generic.Aux[F, G],
+      fromTraversable: FromTraversable[G]
+    ): FromTraversable[F] =
+      new FromTraversable[F] {
+        def apply(l: GenTraversable[Any]) = fromTraversable(l).map(gen.from)
+      }
+  }
+
+  object FromTraversable extends LowPriorityFromTraversable {
     def apply[Out <: HList](implicit from: FromTraversable[Out]) = from
 
-    import syntax.typeable._
+    implicit val hnilFromTraversable: FromTraversable[HNil] =
+      new FromTraversable[HNil] {
+        def apply(l: GenTraversable[Any]) =
+          if (l.isEmpty)
+            Some(HNil)
+          else
+            None
+      }
 
-    implicit def hnilFromTraversable = new FromTraversable[HNil] {
-      def apply(l : GenTraversable[_]) =
-        if(l.isEmpty) Some(HNil) else None 
-    }
-    
-    implicit def hlistFromTraversable[OutH, OutT <: HList]
-      (implicit flt : FromTraversable[OutT], oc : Typeable[OutH]) = new FromTraversable[OutH :: OutT] {
-        def apply(l : GenTraversable[_]) : Option[OutH :: OutT] =
-          if(l.isEmpty) None
-          else for(h <- l.head.cast[OutH]; t <- flt(l.tail)) yield h :: t
-    }
+    implicit def hconsFromTraversable[H, T <: HList](implicit
+      typeable: Typeable[H],
+      tailFromTraversable: FromTraversable[T]
+    ): FromTraversable[H :: T] =
+      new FromTraversable[H :: T] {
+        def apply(l: GenTraversable[Any]) =
+          if (l.isEmpty)
+            None
+          else
+            for {
+              h <- typeable.cast(l.head)
+              t <- tailFromTraversable(l.tail)
+            } yield h :: t
+      }
   }
 }
