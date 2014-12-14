@@ -499,7 +499,16 @@ object hlist {
    */
   trait SubtypeUnifier[L <: HList, B] extends DepFn1[L] { type Out <: HList }
 
-  object SubtypeUnifier {
+  trait LowPrioritySubtypeUnifier {
+    implicit def hlistSubtypeUnifierNonSubType[H, T <: HList, B]
+      (implicit sut: SubtypeUnifier[T, B]): SubtypeUnifier.Aux[H :: T, B, H :: sut.Out] =
+        new SubtypeUnifier[H :: T, B] {
+          type Out = H :: sut.Out
+          def apply(l : H :: T): Out = l.head :: sut(l.tail)
+        }
+  }
+  
+  object SubtypeUnifier extends LowPrioritySubtypeUnifier {
     def apply[L <: HList, B](implicit unifier: SubtypeUnifier[L, B]): Aux[L, B, unifier.Out] = unifier
 
     type Aux[L <: HList, B, Out0 <: HList] = SubtypeUnifier[L, B] { type Out = Out0 }
@@ -515,13 +524,6 @@ object hlist {
         new SubtypeUnifier[H :: T, B] {
           type Out = B :: sut.Out
           def apply(l : H :: T): Out = st(l.head) :: sut(l.tail)
-        }
-
-    implicit def hlistSubtypeUnifier2[H, T <: HList, B]
-      (implicit nst : H <:!< B, sut: SubtypeUnifier[T, B]): Aux[H :: T, B, H :: sut.Out] =
-        new SubtypeUnifier[H :: T, B] {
-          type Out = H :: sut.Out
-          def apply(l : H :: T): Out = l.head :: sut(l.tail)
         }
   }
 
