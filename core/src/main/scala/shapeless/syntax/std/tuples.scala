@@ -18,23 +18,12 @@ package shapeless
 package syntax
 package std
 
-trait LowPriorityTuple {
+object tuple {
   implicit def productTupleOps[P: IsTuple](p: P): TupleOps[P] = new TupleOps(p)
-}
-
-object tuple extends LowPriorityTuple {
-  // Duplicated here from shapeless.HList so that explicit imports of tuple._ don't
-  // clobber the conversion to HListOps.
-  implicit def hlistOps[L <: HList](l : L) : HListOps[L] = new HListOps(l)
 }
 
 final class TupleOps[T](t: T) extends Serializable {
   import ops.tuple._
-
-  /**
-   * Returns an `HList` containing the elements of this tuple.
-   */
-  def productElements(implicit gen: Generic[T]): gen.Repr = gen.to(t)
 
   /**
    * Returns the first element of this tuple.

@@ -22,6 +22,7 @@ import org.junit.Assert._
 class ConversionTests {
   import ops.function.FnToProduct
   import syntax.std.function._
+  import syntax.std.product._
   import syntax.std.tuple._
   import test._
 
@@ -29,7 +30,7 @@ class ConversionTests {
   def testTuples {
     val t1 = (23, "foo", 2.0, true)
     
-    val h1 = t1.productElements
+    val h1 = t1.toHList
     typed[Int :: String :: Double :: Boolean :: HNil](h1)
     assertEquals(23 :: "foo" :: 2.0 :: true :: HNil, h1)
     
@@ -50,12 +51,12 @@ class ConversionTests {
     val t5 = (23, "foo")
     val t6 = (false, 3.0)
     
-    val t7 = (t5.productElements ::: t6.productElements).tupled
+    val t7 = (t5.toHList ::: t6.toHList).tupled
     typed[(Int, String, Boolean, Double)](t7)
     assertEquals((23, "foo", false, 3.0), t7)
     
     val t8 = (Set(2), Set("foo"))
-    val t8b = (t8.productElements map choose).tupled
+    val t8b = (t8.toHList map choose).tupled
     typed[(Option[Int], Option[String])](t8b)
     assertEquals((Option(2), Option("foo")), t8b)
   }
@@ -94,7 +95,7 @@ class ConversionTests {
     
     val f1 = Foo(23, "foo", 2.3)
     val t1 = Foo.unapply(f1).get
-    val hf = t1.productElements
+    val hf = t1.toHList
     val f2 = Foo.tupled(hf.tupled)
     assertEquals(f1, f2)
   }
