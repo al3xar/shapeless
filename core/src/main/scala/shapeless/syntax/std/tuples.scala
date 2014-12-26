@@ -19,12 +19,10 @@ package syntax
 package std
 
 trait LowPriorityTuple {
-  implicit def productTupleOps[P <: Product](p: P): TupleOps[P] = new TupleOps(p)
+  implicit def productTupleOps[P: IsTuple](p: P): TupleOps[P] = new TupleOps(p)
 }
 
 object tuple extends LowPriorityTuple {
-  implicit def unitTupleOps(u: Unit): TupleOps[Unit] = new TupleOps(u)
-
   // Duplicated here from shapeless.HList so that explicit imports of tuple._ don't
   // clobber the conversion to HListOps.
   implicit def hlistOps[L <: HList](l : L) : HListOps[L] = new HListOps(l)
