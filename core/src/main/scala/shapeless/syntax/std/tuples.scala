@@ -396,49 +396,9 @@ final class TupleOps[T](t: T) {
   def unifySubtypes[B](implicit subtypeUnifier : SubtypeUnifier[T, B]) : subtypeUnifier.Out = subtypeUnifier(t)
   
   /**
-   * Compute the length of this tuple.
-   */
-  def length(implicit length : Length[T]) : length.Out = length(t)
-
-  /**
-   * Converts this tuple to a `M` of elements typed as the least upper bound of the types of the elements
-   * of this tuple.
-   */
-  def to[M[_]](implicit toTraversable : ToTraversable[T, M]) : toTraversable.Out = toTraversable(t)
-
-  /**
-   * Converts this tuple to a `List` of elements typed as the least upper bound of the types of the elements
-   * of this tuple.
-   */
-  def toList[Lub](implicit toTraversable : ToTraversable.Aux[T, List, Lub]) : toTraversable.Out = toTraversable(t)
-  
-  /**
-   * Converts this tuple to an `Array` of elements typed as the least upper bound of the types of the elements
-   * of this tuple.
-   * 
-   * It is advisable to specify the type parameter explicitly, because for many reference types, case classes in
-   * particular, the inferred type will be too precise (ie. `Product with Serializable with CC` for a typical case class
-   * `CC`) which interacts badly with the invariance of `Array`s.
-   */
-  def toArray[Lub](implicit toTraversable : ToTraversable.Aux[T, Array, Lub]) : toTraversable.Out = toTraversable(t)
-  
-  /**
-   * Converts this tuple to a `M` of elements typed as the least upper bound of the types of the elements
-   * of this tuple.
-   */
-  def toSized[M[_]](implicit toSized : ToSized[T, M]) : toSized.Out = toSized(t)
-
-  /**
    * Returns all permutations of this tuple.
    */
   def permutations(implicit permutations: Permutations[T]): permutations.Out = permutations(t)
-
-  /**
-   * Displays all elements of this tuple in a string using start, end, and separator strings.
-   */
-  def mkString(start: String, sep: String, end: String)
-    (implicit toTraversable: ToTraversable.Aux[T, List, Any]): String =
-      this.toList.mkString(start, sep, end)
 
   /**
    * Rotate this tuple left by N

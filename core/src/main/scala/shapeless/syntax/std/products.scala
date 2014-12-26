@@ -19,6 +19,7 @@ package syntax
 package std
 
 object product {
+  implicit def unitProductOps(u: Unit): ProductOps[Unit] = new ProductOps(u)
   implicit def productOps[P <: Product](p: P): ProductOps[P] = new ProductOps[P](p)
 }
 
@@ -56,6 +57,22 @@ final class ProductOps[P](p: P) {
   def to[M[_]](implicit toTraversable: ToTraversable[P, M]): toTraversable.Out = toTraversable(p)
 
   /**
+   * Converts this product to a `List` of elements typed as the least upper bound of the types of the elements
+   * of this product.
+   */
+  def toList[Lub](implicit toTraversable : ToTraversable.Aux[P, List, Lub]) : toTraversable.Out = toTraversable(p)
+
+  /**
+   * Converts this product to an `Array` of elements typed as the least upper bound of the types of the elements
+   * of this product.
+   *
+   * It is advisable to specify the type parameter explicitly, because for many reference types, case classes in
+   * particular, the inferred type will be too precise (ie. `Product with Serializable with CC` for a typical case class
+   * `CC`) which interacts badly with the invariance of `Array`s.
+   */
+  def toArray[Lub](implicit toTraversable : ToTraversable.Aux[P, Array, Lub]) : toTraversable.Out = toTraversable(p)
+
+  /**
    * Returns a `Map` whose values are typed as the Lub of the values of this product.
    */
   def toMap[K, V](implicit toMap: ToMap.Aux[P, K, V]): Map[K, V] = toMap(p)
@@ -64,4 +81,11 @@ final class ProductOps[P](p: P) {
    * Returns a sized collection `M` whose elements are typed as the Lub of the elements of this product.
    */
   def toSized[M[_]](implicit toSized: ToSized[P, M]): toSized.Out = toSized(p)
+
+  /**
+   * Displays all elements of this tuple in a string using start, end, and separator strings.
+   */
+  def mkString(start: String, sep: String, end: String)
+              (implicit toTraversable: ToTraversable.Aux[P, List, Any]): String =
+    toList.mkString(start, sep, end)
 }

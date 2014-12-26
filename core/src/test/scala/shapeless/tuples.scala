@@ -26,6 +26,7 @@ class TupleTests {
   import nat._
   import poly._
   import syntax.std.traversable._
+  import syntax.std.product._
   import syntax.std.tuple._
   import syntax.typeable._
 

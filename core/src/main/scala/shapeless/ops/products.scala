@@ -139,6 +139,48 @@ object product {
     ): Aux[P, M, Nothing] = productToTraversable[P, M, Nothing, HNil]
   }
 
+  /**
+   * Type class supporting conversion of this product to a `List` with elements typed as the least upper bound
+   * of the types of the elements of this product.
+   *
+   * Provided for backward compatibility.
+   *
+   * @author Miles Sabin
+   */
+  trait ToList[T, Lub] extends DepFn1[T]
+
+  object ToList {
+    type Aux[T, Lub, Out0] = ToList[T, Lub] { type Out = Out0 }
+
+    implicit def toList[T, L <: HList, Lub]
+     (implicit toTraversable: ToTraversable.Aux[T, List, Lub]): Aux[T, Lub, List[Lub]] =
+      new ToList[T, Lub] {
+        type Out = List[Lub]
+        def apply(t: T) = toTraversable(t)
+      }
+  }
+
+  /**
+   * Type class supporting conversion of this product to an `Array` with elements typed as the least upper bound
+   * of the types of the elements of this product.
+   *
+   * Provided for backward compatibility.
+   *
+   * @author Miles Sabin
+   */
+  trait ToArray[T, Lub] extends DepFn1[T]
+
+  object ToArray {
+    type Aux[T, Lub, Out0] = ToArray[T, Lub] { type Out = Out0 }
+
+    implicit def toArray[T, L <: HList, Lub]
+     (implicit toTraversable: ToTraversable.Aux[T, Array, Lub]): Aux[T, Lub, Array[Lub]] =
+      new ToArray[T, Lub] {
+        type Out = Array[Lub]
+        def apply(t: T) = toTraversable(t)
+      }
+  }
+
   trait ToSized[P, M[_]] extends DepFn1[P] {
     type Lub
     type N <: Nat
