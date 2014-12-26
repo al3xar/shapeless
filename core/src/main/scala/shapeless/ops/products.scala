@@ -17,25 +17,28 @@
 package shapeless
 package ops
 
-import hlist.Length
-
 object product {
-  trait ProductLength[T] extends DepFn1[T] { type Out <: Nat }
+  /**
+   * Type class supporting computing the type-level Nat corresponding to the length of this tuple.
+   *
+   * @author Miles Sabin
+   */
+  trait Length[T] extends DepFn0 with Serializable { type Out <: Nat }
 
-  object ProductLength {
-    def apply[T](implicit length: ProductLength[T]): Aux[T, length.Out] = length
+  object Length {
+    def apply[T](implicit length: Length[T]): Aux[T, length.Out] = length
 
-    type Aux[T, Out0 <: Nat] = ProductLength[T] { type Out = Out0 }
-    
+    type Aux[T, Out0 <: Nat] = Length[T] { type Out = Out0 }
+
     implicit def length[T, L <: HList]
-      (implicit gen: Generic.Aux[T, L], length: Length[L]): Aux[T, length.Out] =
-        new ProductLength[T] {
-          type Out = length.Out
-          def apply(t: T): Out = length()
-        }
+     (implicit gen: Generic.Aux[T, L], length: ops.hlist.Length[L]): Aux[T, length.Out] =
+      new Length[T] {
+        type Out = length.Out
+        def apply(): Out = length()
+      }
   }
-  
-  trait ToTuple[P] extends DepFn1[P]
+
+  trait ToTuple[P] extends DepFn1[P] with Serializable
   
   object ToTuple {
     def apply[P](implicit toTuple: ToTuple[P]): Aux[P, toTuple.Out] = toTuple
@@ -53,7 +56,7 @@ object product {
       }
   }
   
-  trait ToHList[P] extends DepFn1[P] { type Out <: HList }
+  trait ToHList[P] extends DepFn1[P] with Serializable { type Out <: HList }
   
   object ToHList {
     def apply[P](implicit toHList: ToHList[P]): Aux[P, toHList.Out] = toHList
@@ -70,7 +73,7 @@ object product {
       }
   }
 
-  trait ToRecord[P] extends DepFn1[P] { type Out <: HList }
+  trait ToRecord[P] extends DepFn1[P] with Serializable { type Out <: HList }
 
   object ToRecord {
     def apply[P](implicit toRecord: ToRecord[P]): Aux[P, toRecord.Out] = toRecord
@@ -87,7 +90,7 @@ object product {
       }
   }
 
-  trait ToMap[P] extends DepFn1[P] {
+  trait ToMap[P] extends DepFn1[P] with Serializable {
     type K
     type V
     type Out = Map[K, V] 
@@ -114,7 +117,7 @@ object product {
     ): Aux[P, K0, Nothing] = productToMap[P, K0, Nothing, HNil]
   }
 
-  trait ToTraversable[P, M[_]] extends DepFn1[P] {
+  trait ToTraversable[P, M[_]] extends DepFn1[P] with Serializable {
     type Lub
     type Out = M[Lub]
   }
@@ -139,7 +142,61 @@ object product {
     ): Aux[P, M, Nothing] = productToTraversable[P, M, Nothing, HNil]
   }
 
-  trait ToSized[P, M[_]] extends DepFn1[P] {
+  /**
+   * Type class supporting conversion of this tuple to a `List` with elements typed as the least upper bound
+   * of the types of the elements of this tuple.
+   *
+   * Provided for backward compatibility.
+   *
+   * @author Miles Sabin
+   */
+  trait ToList[T, Lub] extends DepFn1[T] with Serializable
+
+  object ToList {
+    type Aux[T, Lub, Out0] = ToList[T, Lub] { type Out = Out0 }
+
+    def apply[T, Lub](implicit toList: ToList[T, Lub]): Aux[T, Lub, toList.Out] = toList
+
+    implicit def toList[T, Lub]
+     (implicit toTraversable: ToTraversable.Aux[T, List, Lub]): Aux[T, Lub, List[Lub]] =
+      new ToList[T, Lub] {
+        type Out = List[Lub]
+        def apply(t: T) = toTraversable(t)
+      }
+
+    implicit def toListNothing[T]
+     (implicit toTraversable: ToTraversable.Aux[T, List, Nothing]): Aux[T, Nothing, List[Nothing]] =
+      toList[T, Nothing]
+  }
+
+  /**
+   * Type class supporting conversion of this tuple to an `Array` with elements typed as the least upper bound
+   * of the types of the elements of this tuple.
+   *
+   * Provided for backward compatibility.
+   *
+   * @author Miles Sabin
+   */
+  trait ToArray[T, Lub] extends DepFn1[T] with Serializable
+
+  object ToArray {
+    type Aux[T, Lub, Out0] = ToArray[T, Lub] { type Out = Out0 }
+
+    def apply[T, Lub](implicit toArray: ToArray[T, Lub]): Aux[T, Lub, toArray.Out] = toArray
+
+    implicit def toArray[T, Lub]
+     (implicit toTraversable: ToTraversable.Aux[T, Array, Lub]): Aux[T, Lub, Array[Lub]] =
+      new ToArray[T, Lub] {
+        type Out = Array[Lub]
+        def apply(t: T) = toTraversable(t)
+      }
+
+    implicit def toArrayNothing[T]
+     (implicit toTraversable: ToTraversable.Aux[T, Array, Nothing]): Aux[T, Nothing, Array[Nothing]] =
+      toArray[T, Nothing]
+  }
+
+  trait ToSized[P, M[_]] extends DepFn1[P] with Serializable {
     type Lub
     type N <: Nat
     type Out = Sized[M[Lub], N]

@@ -26,7 +26,7 @@ object LinearAlgebraExamples extends App {
   import nat._
   import newtype._
   import ops.hlist.{ Mapper, Transposer }
-  import ops.product.ProductLength
+  import ops.product.Length
   import test._
   
   abstract class VectorOps[N <: Nat, P <: Product](p : P) {
@@ -58,7 +58,7 @@ object LinearAlgebraExamples extends App {
   }
 
   def Vector(p : Double) = newtype[Tuple1[Double], VectorOps[_1, Tuple1[Double]]](Tuple1(p))
-  def Vector[P <: Product, N <: Nat](p : P)(implicit ar : ProductLength.Aux[P, N]) = newtype[P, VectorOps[N, P]](p)
+  def Vector[P <: Product, N <: Nat](p : P)(implicit ar : Length.Aux[P, N]) = newtype[P, VectorOps[N, P]](p)
   
   type V1 = Newtype[Tuple1[Double], VectorOps[_1, Tuple1[Double]]]
   type V2 = Newtype[(Double, Double), VectorOps[_2, (Double, Double)]]

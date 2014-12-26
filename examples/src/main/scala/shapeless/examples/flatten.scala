@@ -25,6 +25,7 @@ object FlattenExample {
   import shapeless._
   import ops.tuple.FlatMapper
   import syntax.std.tuple._
+  import syntax.std.product._
   import test._
   
   trait LowPriorityFlatten extends Poly1 {

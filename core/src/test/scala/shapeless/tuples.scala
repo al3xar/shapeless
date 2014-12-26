@@ -26,6 +26,7 @@ class TupleTests {
   import nat._
   import poly._
   import syntax.std.traversable._
+  import syntax.std.product._
   import syntax.std.tuple._
   import syntax.typeable._
 
@@ -517,7 +518,7 @@ class TupleTests {
 
   @Test
   def testToList {
-    import ops.tuple.ToList
+    import ops.product.ToList
 
     ToList[Unit, Nothing]
     ToList[Unit, Int]
@@ -648,7 +649,7 @@ class TupleTests {
 
   @Test
   def testToArray {
-    import ops.tuple.ToArray
+    import ops.product.ToArray
 
     ToArray[Unit, Nothing]
     ToArray[Unit, Int]

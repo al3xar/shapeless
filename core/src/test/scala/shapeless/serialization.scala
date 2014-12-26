@@ -21,7 +21,7 @@ import java.io._
 import org.junit.Test
 import org.junit.Assert._
 
-import scala.collection.generic.CanBuildFrom
+import scala.collection.generic.{ IsTraversableLike, CanBuildFrom }
 
 import labelled._
 import nat._
@@ -224,6 +224,12 @@ object SerializationTestDefns {
     new CanBuildFrom[List[T], T, List[T]] with Serializable {
       def apply(from: List[T]) = from.genericBuilder[T]
       def apply() = List.newBuilder[T]
+    }
+
+  implicit def listIsTraversableLike[T]: IsTraversableLike[List[T]] { type A = T } =
+    new IsTraversableLike[List[T]] with Serializable {
+      type A = T
+      val conversion = (l: List[T]) => l
     }
 
 }
@@ -674,6 +680,38 @@ class SerializationTests {
   }
 
   @Test
+  def testProducts {
+    import ops.product._
+
+    type L = (Int, String, Boolean)
+
+    assertSerializable(Length[Unit])
+    assertSerializable(Length[L])
+
+    assertSerializable(ToTuple[Unit])
+    assertSerializable(ToTuple[L])
+
+    assertSerializable(ToHList[Unit])
+    assertSerializable(ToHList[L])
+
+    assertSerializable(ToRecord[Unit])
+    assertSerializable(ToRecord[L])
+
+    assertSerializable(ToMap[Unit])
+    assertSerializable(ToMap[L])
+
+    assertSerializable(ToTraversable[Unit, List])
+    assertSerializable(ToTraversable[L, List])
+
+    assertSerializable(ToList[Unit, Nothing])
+    assertSerializable(ToList[Unit, Int])
+    assertSerializable(ToList[L, Any])
+
+    assertSerializable(ToSized[Unit, List])
+    assertSerializable(ToSized[L, List])
+  }
+
+  @Test
   def testTuples {
     import ops.tuple._
 
@@ -791,19 +829,6 @@ class SerializationTests {
 
     assertSerializable(SubtypeUnifier[Unit, Quux])
     assertSerializable(SubtypeUnifier[Q, Quux])
-
-    assertSerializable(Length[Unit])
-    assertSerializable(Length[L])
-
-    assertSerializable(ToTraversable[Unit, List])
-    assertSerializable(ToTraversable[L, List])
-
-    assertSerializable(ToList[Unit, Nothing])
-    assertSerializable(ToList[Unit, Int])
-    assertSerializable(ToList[L, Any])
-
-    assertSerializable(ToSized[Unit, List])
-    assertSerializable(ToSized[L, List])
 
     assertSerializable(Collect[Unit, selInt.type])
     assertSerializable(Collect[L, selInt.type])
