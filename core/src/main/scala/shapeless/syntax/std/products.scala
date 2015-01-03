@@ -19,7 +19,7 @@ package syntax
 package std
 
 object product {
-  implicit def productOps[P <: Product](p: P): ProductOps[P] = new ProductOps[P](p)
+  implicit def productOps[P: HasProductGeneric](p: P): ProductOps[P] = new ProductOps[P](p)
 }
 
 final class ProductOps[P](p: P) {
