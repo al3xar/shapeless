@@ -27,13 +27,6 @@ package object shapeless {
     type λ[T] = C
   }
 
-  // Type inequalities
-  trait =:!=[A, B]
-
-  implicit def neq[A, B] : A =:!= B = new =:!=[A, B] {}
-  implicit def neqAmbig1[A] : A =:!= A = unexpected
-  implicit def neqAmbig2[A] : A =:!= A = unexpected
-
   /** `Optic` definitions */
   val optic = OpticDefns
   val lens = OpticDefns

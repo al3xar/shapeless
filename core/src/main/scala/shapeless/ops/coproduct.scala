@@ -99,7 +99,25 @@ object coproduct {
     def coproduct(c: C): Prefix :+: Suffix :+: CNil
   }
 
-  object Partition {
+  trait LowPriorityPartition {
+    implicit def coproductPartition_NonMatch[H, T <: Coproduct, TPrefix <: Coproduct, TSuffix <: Coproduct, U](
+      implicit partition: Partition.Aux[T, U, TPrefix, TSuffix]
+    ): Partition.Aux[H :+: T, U, TPrefix, H :+: TSuffix] = new Partition[H :+: T, U] {
+      type Prefix = TPrefix
+      type Suffix = H :+: TSuffix
+
+      def coproduct(c: H :+: T): Prefix :+: Suffix :+: CNil = c match {
+        case Inl(h) => Inr(Inl(Inl(h)))
+        case Inr(t) => partition.coproduct(t) match {
+          case Inl(h)      => Inl(h)
+          case Inr(Inl(t)) => Inr(Inl(Inr(t)))
+          case Inr(Inr(c)) => Inr(Inr(c))
+        }
+      }
+    }
+  }
+
+  object Partition extends LowPriorityPartition {
     def apply[C <: Coproduct, U]
       (implicit partition: Partition[C, U]): Aux[C, U, partition.Prefix, partition.Suffix] = partition
 
@@ -115,33 +133,17 @@ object coproduct {
       def coproduct(c: CNil): Prefix :+: Suffix :+: CNil = Inr(Inr(c))
     }
 
-    implicit def coproductPartition_Match[H, T <: Coproduct, TPrefix <: Coproduct, TSuffix <: Coproduct](
-      implicit partition: Aux[T, H, TPrefix, TSuffix]
-    ): Aux[H :+: T, H, H :+: TPrefix, TSuffix] = new Partition[H :+: T, H] {
-      type Prefix = H :+: TPrefix
+    implicit def coproductPartition_Match[U, T <: Coproduct, TPrefix <: Coproduct, TSuffix <: Coproduct](
+      implicit partition: Aux[T, U, TPrefix, TSuffix]
+    ): Aux[U :+: T, U, U :+: TPrefix, TSuffix] = new Partition[U :+: T, U] {
+      type Prefix = U :+: TPrefix
       type Suffix = TSuffix
 
-      def coproduct(c: H :+: T): Prefix :+: Suffix :+: CNil = c match {
+      def coproduct(c: U :+: T): Prefix :+: Suffix :+: CNil = c match {
         case Inl(h) => Inl(Inl(h))
         case Inr(t) => partition.coproduct(t) match {
           case Inl(h) => Inl(Inr(h))
           case Inr(t) => Inr(t)
-        }
-      }
-    }
-
-    implicit def coproductPartition_NonMatch[H, T <: Coproduct, TPrefix <: Coproduct, TSuffix <: Coproduct, U](
-      implicit partition: Aux[T, U, TPrefix, TSuffix], e: U =:!= H
-    ): Aux[H :+: T, U, TPrefix, H :+: TSuffix] = new Partition[H :+: T, U] {
-      type Prefix = TPrefix
-      type Suffix = H :+: TSuffix
-
-      def coproduct(c: H :+: T): Prefix :+: Suffix :+: CNil = c match {
-        case Inl(h) => Inr(Inl(Inl(h)))
-        case Inr(t) => partition.coproduct(t) match {
-          case Inl(h)      => Inl(h)
-          case Inr(Inl(t)) => Inr(Inl(Inr(t)))
-          case Inr(Inr(c)) => Inr(Inr(c))
         }
       }
     }
