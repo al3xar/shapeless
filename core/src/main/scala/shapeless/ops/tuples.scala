@@ -856,6 +856,26 @@ object tuple {
   }
 
   /**
+   * Type class supporting unification of this tuple with a user-specified bound.
+   *
+   * @author Miles Sabin
+   */
+  trait BoundedUnifier[T, B] extends DepFn1[T] with Serializable
+
+  object BoundedUnifier {
+    def apply[T, B](implicit boundedUnifier: BoundedUnifier[T, B]): Aux[T, B, boundedUnifier.Out] = boundedUnifier
+
+    type Aux[T, B, Out0] = BoundedUnifier[T, B] { type Out = Out0 }
+
+    implicit def boundedUnifier[T, L1 <: HList, B, L2 <: HList]
+     (implicit gen: Generic.Aux[T, L1], unifier: hl.BoundedUnifier.Aux[L1, B, L2], tp: hl.Tupler[L2]): Aux[T, B, tp.Out] =
+      new BoundedUnifier[T, B] {
+        type Out = tp.Out
+        def apply(t: T): Out = unifier(gen.to(t)).tupled
+      }
+  }
+
+  /**
    * Type class supporting unification of all elements that are subtypes of `B` in this tuple to `B`, with all other
    * elements left unchanged.
    *

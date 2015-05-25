@@ -390,49 +390,71 @@ class TupleTests {
   def testUnifier {
     import ops.tuple._
 
-    implicitly[Unifier.Aux[Tuple1[Apple], Tuple1[Apple]]]
-    implicitly[Unifier.Aux[(Fruit, Pear), (Fruit, Fruit)]]
-    //implicitly[Unifier.Aux[(Apple, Pear), (Fruit, Fruit)]]
+    Unifier[Tuple1[Apple]]
+    Unifier[(Fruit, Pear)]
+    Unifier[(Apple, Pear)]
+    
+    Unifier[(Int, String, Int, Int)]
 
-    implicitly[Unifier.Aux[(Int, String, Int, Int), YYYY]]
-
-    val uapap = implicitly[Unifier.Aux[(Apple, Pear, Apple, Pear), (PWS, PWS, PWS, PWS)]]
-    val unified1 = uapap(apap)
+    val unified1 = apap.unify
     typed[FFFF](unified1)
-    val unified2 = apap.unify
-    typed[FFFF](unified2)
 
-    val ununified1 = unified2.cast[APAP]
+    val ununified1 = unified1.cast[APAP]
     assertTrue(ununified1.isDefined)
     typed[APAP](ununified1.get)
-    val ununified2 = unified2.cast[APBP]
+    val ununified2 = unified1.cast[APBP]
     assertFalse(ununified2.isDefined)
     typed[Option[APBP]](ununified2)
 
-    def getUnifier[T, Out](t : T)(implicit u: Unifier.Aux[T, Out]) = u
+    val u2 = Tuple1(a).unify
+    typed[Tuple1[Apple]](u2)
+    val u3 = (a, a).unify
+    typed[(Apple, Apple)](u3)
+    val u4 = (a, a, a).unify
+    typed[(Apple, Apple, Apple)](u4)
+    val u5 = (a, a, a, a).unify
+    typed[(Apple, Apple, Apple, Apple)](u5)
+    val u6 = (a, p).unify
+    typed[(Fruit, Fruit)](u6)
+    val u7 = (a, f).unify
+    typed[(Fruit, Fruit)](u7)
+    val u8 = (f, a).unify
+    typed[(Fruit, Fruit)](u8)
+    val u9a = (a, f).unify
+    typed[(Fruit, Fruit)](u9a)
+    val u9b = (a, p).unify
+    typed[(Fruit, Fruit)](u9b)
+    val u10 = apap.unify
+    typed[(Fruit, Fruit, Fruit, Fruit)](u10)
+    val u11 = apbp.unify
+    typed[(Fruit, Fruit, Fruit, Fruit)](u11)
+    
+    def equalInferredTypes[A,B](a: A, b: B)(implicit eq: A =:= B) {}
 
-    val u2 = getUnifier(Tuple1(a))
-    typed[Unifier.Aux[Tuple1[Apple], Tuple1[Apple]]](u2)
-    val u3 = getUnifier((a, a))
-    typed[Unifier.Aux[(Apple, Apple), (Apple, Apple)]](u3)
-    val u4 = getUnifier((a, a, a))
-    typed[Unifier.Aux[(Apple, Apple, Apple), (Apple, Apple, Apple)]](u4)
-    val u5 = getUnifier((a, a, a, a))
-    typed[Unifier.Aux[(Apple, Apple, Apple, Apple), (Apple, Apple, Apple, Apple)]](u5)
-    //val u6 = getUnifier((a, p))
-    //typed[Unifier.Aux[(Apple, Pear), (Fruit, Fruit)]](u6)
-    val u7 = getUnifier((a, f))
-    typed[Unifier.Aux[(Apple, Fruit), (Fruit, Fruit)]](u7)
-    val u8 = getUnifier((f, a))
-    typed[Unifier.Aux[(Fruit, Apple), (Fruit, Fruit)]](u8)
-    val u9a = getUnifier((a, f))
-    typed[Unifier.Aux[(Apple, Fruit), FF]](u9a)
-    val u9b = getUnifier((a, p))
-    typed[Unifier.Aux[(Apple, Pear), (PWS, PWS)]](u9b)
-    val u10 = getUnifier(apap)
-    typed[Unifier.Aux[APAP, (PWS, PWS, PWS, PWS)]](u10)
-    val u11 = getUnifier(apbp)
-    typed[Unifier.Aux[APBP, (PWS, PWS, PWS, PWS)]](u11)
+    {
+      val hl = (a, "a", 2, 3, 0.0)
+      val l = List(a, "a", 2, 3, 0.0)
+      val u = hl.unify
+      equalInferredTypes(hl.length, u.length)
+      equalInferredTypes(l.head, u._1)
+      equalInferredTypes(l.head, u._2)
+      equalInferredTypes(l.head, u._3)
+      equalInferredTypes(l.head, u._4)
+      equalInferredTypes(l.head, u._5)
+      assertEquals(hl, u)
+    }
+
+    {
+      // Explicitly provided upper bound
+      val apbpList = List[Fruit](a, p, b, p)
+      val apbpUnified = apbp.unifyWith[Fruit]
+      equalInferredTypes(apbp.length, apbpUnified.length)
+      equalInferredTypes(apbpList.head, apbpUnified._1)
+      equalInferredTypes(apbpList.head, apbpUnified._2)
+      equalInferredTypes(apbpList.head, apbpUnified._3)
+      equalInferredTypes(apbpList.head, apbpUnified._4)
+      assertEquals(apbp, apbpUnified)
+    }
 
     val invar1 = (Set(23), Set("foo"))
     val uinvar1 = invar1.unify
@@ -442,6 +464,25 @@ class TupleTests {
     // arguments fails, presumably due to a failure to compute a sensible LUB.
     //val invar2 = (Set(23), Set("foo"), Set(true))
     //val uinvar2 = invar2.unify
+
+    {
+      val cicscicicdUnified = cicscicicd.unify
+      equalInferredTypes(cicscicicd.length, cicscicicdUnified.length)
+      equalInferredTypes(cicscicicdList.head, cicscicicdUnified._1)
+      equalInferredTypes(cicscicicdList.head, cicscicicdUnified._2)
+      equalInferredTypes(cicscicicdList.head, cicscicicdUnified._3)
+      equalInferredTypes(cicscicicdList.head, cicscicicdUnified._4)
+      equalInferredTypes(cicscicicdList.head, cicscicicdUnified._5)
+      assertEquals(cicscicicd, cicscicicdUnified)
+      typed[Ctv[Int with String with Double]](cicscicicdUnified._1)
+      typed[Ctv[Int with String with Double]](cicscicicdUnified._2)
+      typed[Ctv[Int with String with Double]](cicscicicdUnified._3)
+      typed[Ctv[Int with String with Double]](cicscicicdUnified._4)
+      typed[Ctv[Int with String with Double]](cicscicicdUnified._5)
+    }
+
+    // mimsmimimd, mimsmimemd, m2im2sm2im2im2d, and m2eim2esm2eim2eem2ed unification works
+    // but cannot be properly tested as their output types involve existentials
   }
 
   @Test

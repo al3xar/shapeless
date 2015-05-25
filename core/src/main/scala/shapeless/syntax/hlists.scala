@@ -452,6 +452,11 @@ final class HListOps[L <: HList](l : L) extends Serializable {
   def unify(implicit unifier : Unifier[L]) : unifier.Out = unifier(l)
 
   /**
+   * Returns an `HList` typed as a repetition of the least upper bound of the types of the elements of this `HList`.
+   */
+  def unifyWith[B](implicit unifier : BoundedUnifier[L, B]): unifier.Out = unifier(l)
+
+  /**
    * Returns an `HList` with all elements that are subtypes of `B` typed as `B`.
    */
   def unifySubtypes[B](implicit subtypeUnifier : SubtypeUnifier[L, B]) : subtypeUnifier.Out = subtypeUnifier(l)

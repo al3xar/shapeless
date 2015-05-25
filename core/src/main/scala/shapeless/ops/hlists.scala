@@ -463,7 +463,7 @@ object hlist {
   /**
    * Type class supporting unification of this `HList`.
    *
-   * @author Miles Sabin
+   * @author Alexandre Archambault
    */
   trait Unifier[L <: HList] extends DepFn1[L] with Serializable { type Out <: HList }
 
@@ -472,23 +472,43 @@ object hlist {
 
     type Aux[L <: HList, Out0 <: HList] = Unifier[L] { type Out = Out0 }
 
-    implicit val hnilUnifier: Aux[HNil, HNil] = new Unifier[HNil] {
-      type Out = HNil
-      def apply(l : HNil): Out = l
-    }
-
-    implicit def hsingleUnifier[T]: Aux[T :: HNil, T :: HNil] =
-      new Unifier[T :: HNil] {
-        type Out = T :: HNil
-        def apply(l : T :: HNil): Out = l
+    implicit def hnilUnifier[L <: HNil]: Aux[L, L] =
+      new Unifier[L] {
+        type Out = L
+        def apply(l: L) = l
       }
 
-    implicit def hlistUnifier[H1, H2, L, T <: HList]
-      (implicit u : Lub[H1, H2, L], lt : Unifier[L :: T]): Aux[H1 :: H2 :: T, L :: lt.Out] =
-        new Unifier[H1 :: H2 :: T] {
-          type Out = L :: lt.Out
-          def apply(l : H1 :: H2 :: T): Out = u.left(l.head) :: lt(u.right(l.tail.head) :: l.tail.tail)
-        }
+    implicit def hlistUnifier[L <: HList, Lub, N <: Nat](implicit
+      toSized: ToSized.Aux[L, List, Lub, N],
+      toHList: ops.sized.ToHList[List[Lub], N]
+    ): Aux[L, toHList.Out] =
+      new Unifier[L] {
+        type Out = toHList.Out
+        def apply(l: L) = toHList(toSized(l))
+      }
+  }
+
+  /**
+   * Type class supporting unification of this `HList` with a specified bound.
+   *
+   * @author Alexandre Archambault
+   */
+  trait BoundedUnifier[L <: HList, B] extends DepFn1[L] with Serializable { type Out <: HList }
+
+  object BoundedUnifier {
+    def apply[L <: HList, B](implicit boundedUnifier: BoundedUnifier[L, B]): Aux[L, B, boundedUnifier.Out] =
+      boundedUnifier
+
+    type Aux[L <: HList, B, Out0 <: HList] = BoundedUnifier[L, B] { type Out = Out0 }
+
+    implicit def hlistBoundedUnifier[L <: HList, Lub, N <: Nat](implicit
+      toSized: ToSized.Aux[L, List, Lub, N],
+      toHList: ops.sized.ToHList[List[Lub], N]
+    ): Aux[L, Lub, toHList.Out] =
+      new BoundedUnifier[L, Lub] {
+        type Out = toHList.Out
+        def apply(l: L) = toHList(toSized(l))
+      }
   }
 
   /**

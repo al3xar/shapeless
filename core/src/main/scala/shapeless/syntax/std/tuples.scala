@@ -384,6 +384,11 @@ final class TupleOps[T](t: T) extends Serializable {
   def unify(implicit unifier : Unifier[T]) : unifier.Out = unifier(t)
 
   /**
+   * Returns a tuple typed as a repetition of the least upper bound of the types of the elements of this tuple.
+   */
+  def unifyWith[B](implicit unifier : BoundedUnifier[T, B]) : unifier.Out = unifier(t)
+
+  /**
    * Returns a tuple with all elements that are subtypes of `B` typed as `B`.
    */
   def unifySubtypes[B](implicit subtypeUnifier : SubtypeUnifier[T, B]) : subtypeUnifier.Out = subtypeUnifier(t)
