@@ -108,8 +108,14 @@ class LabelledMacros(val c: whitebox.Context) extends bootstrap.SingletonTypeUti
       if (tpeString.trim.isEmpty)
         Array.empty[(c.Type, c.Type)]
       else
-        tpeString.split(",").map(_.trim).map(_.split("->").map(_.trim)).map {
-          case Array(key, value) =>
+        tpeString.split(",").map(_.trim).map(_.split("->").flatMap(_.split(':')).map(_.trim)).map {
+          case Array(key0, value) =>
+            val key =
+              if (key0.nonEmpty && key0.head.isLetter && key0.forall(_.isLetterOrDigit))
+                "'" + key0
+              else
+                key0
+
             val keyTpe =
               parseLiteralType(key)
                 .getOrElse(c.abort(c.enclosingPosition, s"Malformed literal type $key"))

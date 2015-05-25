@@ -420,4 +420,35 @@ class LabelledGenericTests {
     implicitly[lgent.Repr =:= RT]
     implicitly[TC[RT]]
   }
+  
+  @Test
+  def testExtraSyntax {
+    {
+      type R = Record.`'i -> Int`.T
+      type RExtra = Record.`i: Int`.T
+      
+      implicitly[R =:= RExtra]
+    }
+
+    {
+      type R = Record.`'i -> Int, 's -> String`.T
+      type RExtra = Record.`i: Int, s: String`.T
+
+      implicitly[R =:= RExtra]
+    }
+
+    {
+      type U = Union.`'i -> Int`.T
+      type UExtra = Union.`i: Int`.T
+
+      implicitly[U =:= UExtra]
+    }
+
+    {
+      type U = Union.`'i -> Int, 's -> String`.T
+      type UExtra = Union.`i: Int, s: String`.T
+
+      implicitly[U =:= UExtra]
+    }
+  }
 }
