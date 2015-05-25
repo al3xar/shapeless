@@ -546,7 +546,7 @@ class TypeableTests {
     val m: Map[Int, String] = Map(1 -> "one", 2 -> "two")
     assertEquals("Typeable[Map[Int, String]]", typeableString(m))
 
-    assertEquals("Typeable[HNil.type]", typeableString(HNil))
+    assertEquals("Typeable[HNil]", typeableString(HNil))
     val hl = 1 :: "" :: HNil
     assertEquals("Typeable[Int :: String :: HNil]", typeableString(hl))
 

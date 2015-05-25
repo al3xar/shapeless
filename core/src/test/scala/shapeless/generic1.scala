@@ -178,12 +178,6 @@ package Generic1TestsAux {
       new Pointed[({type λ[A] = A :+: Const[CNil]#λ[A] })#λ] {
         def point[A](a: A): A :+: Const[CNil]#λ[A] = Inl(a)
       }
-      
-
-    implicit val constHNilPointed: Pointed[Const[HNil]#λ] =
-      new Pointed[Const[HNil]#λ] {
-        def point[A](a: A): HNil = HNil
-      }
 
   }
 

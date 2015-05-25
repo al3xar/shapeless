@@ -120,6 +120,12 @@ package object shapeless {
       val value = Nat._0
     }
 
+  /**
+   * Empty `HList` element type.
+   */
+  type HNil = HNilInstance.type
+  val HNil = HNilInstance
+
   implicit def witnessN[P <: Nat]: Witness.Aux[Succ[P]] =
     new Witness {
       type T = Succ[P]

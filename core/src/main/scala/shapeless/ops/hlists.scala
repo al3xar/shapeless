@@ -247,7 +247,7 @@ object hlist {
 
     import shapeless.nat._
     type Aux[L <: HList, N <: Nat] = Length[L] { type Out = N }
-    implicit def hnilLength[L <: HNil]: Aux[L, _0] = new Length[L] {
+    implicit val hnilLength: Aux[HNil, _0] = new Length[HNil] {
       type Out = _0
       def apply(): Out = _0
     }
@@ -555,17 +555,17 @@ object hlist {
 
     type Aux[L <: HList, M[_], Lub0] = ToTraversable[L, M] { type Lub = Lub0 }
 
-    implicit def hnilToTraversable[L <: HNil, M[_], T]
-      (implicit cbf : CanBuildFrom[M[T], T, M[T]]) : Aux[L, M, T] =
-        new ToTraversable[L, M] {
+    implicit def hnilToTraversable[M[_], T]
+      (implicit cbf : CanBuildFrom[M[T], T, M[T]]) : Aux[HNil, M, T] =
+        new ToTraversable[HNil, M] {
           type Lub = T
           def builder() = cbf()
-          def append[LLub](l : L, b : mutable.Builder[LLub, M[LLub]], f : Lub => LLub) = {}
+          def append[LLub](l : HNil, b : mutable.Builder[LLub, M[LLub]], f : Lub => LLub) = {}
         }
 
-    implicit def hnilToTraversableNothing[L <: HNil, M[_]]
-      (implicit cbf : CanBuildFrom[M[Nothing], Nothing, M[Nothing]]) : Aux[L, M, Nothing] =
-        hnilToTraversable[L, M, Nothing]
+    implicit def hnilToTraversableNothing[M[_]]
+      (implicit cbf : CanBuildFrom[M[Nothing], Nothing, M[Nothing]]) : Aux[HNil, M, Nothing] =
+        hnilToTraversable[M, Nothing]
 
     implicit def hsingleToTraversable[T, M[_], Lub0]
       (implicit ev : T <:< Lub0, cbf : CanBuildFrom[Nothing, Lub0, M[Lub0]]) : Aux[T :: HNil, M, Lub0] =
@@ -1983,11 +1983,11 @@ object hlist {
 
     type Aux[A, L <: HList, Out0 <: HList] = Interleave[A, L] { type Out = Out0 }
 
-    implicit def hnilInterleave[A, L <: HNil]: Aux[A, L, (A :: HNil) :: HNil] =
-      new Interleave[A, L] {
+    implicit def hnilInterleave[A]: Aux[A, HNil, (A :: HNil) :: HNil] =
+      new Interleave[A, HNil] {
         type Out = (A :: HNil) :: HNil
 
-        def apply(a: A, l: L): Out = (a :: HNil) :: HNil
+        def apply(a: A, l: HNil): Out = (a :: HNil) :: HNil
       }
 
     implicit def hlistInterleave[A, H, T <: HList, LI <: HList]

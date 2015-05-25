@@ -288,7 +288,13 @@ trait CaseClassMacros extends ReprTypes {
   }
 
   def mkCompoundTypTree1(nil: Type, cons: Type, items: List[Type], param: Type, arg: TypeName): Tree =
-    items.foldRight(mkAttributedRef(nil): Tree) { case (tpe, acc) =>
+    /* Converting nil to a Tree with
+     *   tq"$nil"
+     * and not
+     *   mkAttributedRef(nil)
+     * so that its singleton-ness gets preserved.
+     */
+    items.foldRight(tq"$nil": Tree) { case (tpe, acc) =>
       AppliedTypeTree(mkAttributedRef(cons), List(appliedTypTree1(tpe, param, arg), acc))
     }
 
