@@ -16,6 +16,7 @@
 
 package shapeless
 
+import scala.annotation.tailrec
 import scala.language.experimental.macros
 
 import scala.collection.immutable.ListMap
@@ -642,8 +643,128 @@ trait DerivationContext extends shapeless.CaseClassMacros with LazyDefinitions {
     }
   }
 
+  class Inliner(sym: Name, inlined: Tree) extends Transformer {
+    var count = 0
+
+    override def transform(tree: Tree): Tree =
+      super.transform {
+        tree match {
+          case Ident(sym0) if sym0 == sym =>
+            count += 1
+            inlined
+          case t => t
+        }
+      }
+  }
+
+  object Instances {
+    // These seem not to be dealiased as expected (try with Functor[Some] from the examples),
+    // and are not inlined correctly.
+    def hasHKAliases(tpe: Type) =
+      tpe match {
+        case TypeRef(_, _, args0) =>
+          args0.map(_.dealias).exists {
+            case TypeRef(ThisType(pre), sym, args) if pre.isType && sym.isType && sym.asType.typeParams.nonEmpty =>
+              true
+            case _ => false
+          }
+        case _ => false
+      }
+
+    def canBeInlined(t: (Instance, List[String])): Boolean = {
+      val (inst, dependees) = t
+      inst.dependsOn.isEmpty && dependees.lengthCompare(1) == 0
+    }
+
+    def priorityCanBeSubstituted(t: (Instance, List[String])): Option[Tree] = {
+      val (inst, _) = t
+      if (inst.dependsOn.nonEmpty)
+        None
+      else
+        inst.inst.get match {
+          case q"$method[..$tp](shapeless.Strict.apply[..$tpa](_root_.shapeless.Priority.High[..${List(tph: TypeTree)}]($something)))"
+            if tph.tpe =:= inst.actualTpe => Some(something)
+          case other =>
+            None
+        }
+    }
+
+    def apply(state: State, primaryTpe: Type): Instances = {
+      val instances = state.dependsOn(primaryTpe)
+      var m = Map.empty[String, List[String]]
+
+      for (inst <- instances) {
+        val name = inst.name.toString
+
+        for (depTpe <- inst.dependsOn) {
+          val depInst = state.dict(TypeWrapper(depTpe))
+          val depName = depInst.name.toString
+          m += depName -> (name :: m.getOrElse(depName, Nil))
+        }
+      }
+
+      Instances(
+        instances.map(inst => inst.name.toString -> ((inst, m.getOrElse(inst.name.toString, Nil), !hasHKAliases(inst.instTpe)))).toMap,
+        state.dict(TypeWrapper(primaryTpe)).name.toString
+      )
+    }
+  }
+
+  case class Instances(
+    dict: Map[String, (Instance, List[String], Boolean)],
+    root: String
+  ) {
+    import Instances._
+
+    def prioritySubstitute: Option[Instances] =
+      dict.iterator
+        .map{case (k, v @ (inst, deps, canBeInlined)) => (k, v, priorityCanBeSubstituted((inst, deps)))}
+        .collectFirst { case (k, (inst, dependees, canBeInlined), Some(tree)) =>
+          copy(dict = dict.updated(k, (inst.copy(inst = Some(tree)), dependees, canBeInlined)))
+        }
+
+    def inline: Option[Instances] =
+      dict.find{case (k, v @ (inst, deps, canBeInlined0)) => canBeInlined0 && k != root && canBeInlined((inst, deps)) } match {
+        case None => None
+        case Some((k, (inst, dependees, _))) =>
+          assert(dependees.length == 1)
+          val (dependeeInst, dependeeDependedOnBy, canBeInlined0) = dict(dependees.head)
+          val inliner = new Inliner(inst.name, inst.inst.get)
+          val dependeeInst0 = inliner.transform(dependeeInst.inst.get)
+
+          val dict0 =
+            if (inliner.count == 1)
+              (dict - k).updated(
+                dependees.head,
+                (
+                  dependeeInst.copy(
+                    dependsOn = dependeeInst.dependsOn.filterNot(_ =:= inst.instTpe),
+                    inst = Some(dependeeInst0)
+                  ),
+                  dependeeDependedOnBy,
+                  canBeInlined0
+                )
+              )
+            else
+              dict.updated(k, (inst, dependees, false))
+
+          Some(copy(dict = dict0))
+      }
+
+    @tailrec
+    final def optimize: Instances =
+      prioritySubstitute.orElse(inline) match {
+        case None =>
+          this
+        case Some(instances) =>
+          instances.optimize
+      }
+  }
+
   def mkInstances(state: State)(primaryTpe: Type): (Tree, Type) = {
-    val instances = state.dict.values.toList
+    val instances0 = Instances(state, primaryTpe).optimize
+
+    val instances = instances0.dict.toList.map(_._2._1)
     val (from, to) = instances.map { d => (d.symbol, NoSymbol) }.unzip
 
     def clean(inst: Tree) = {
