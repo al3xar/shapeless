@@ -298,7 +298,7 @@ trait LazyExtensionCompanion {
 
     LazyMacros.dcRef match {
       case None =>
-        val res = c.inferImplicitValue(appliedType(typeOf[Strict[_]], tpe))
+        val res = c.inferImplicitValue(appliedType(typeOf[Strict[_]].typeConstructor, tpe))
         if (res == EmptyTree)
           c.abort(c.enclosingPosition, s"Can't find an implicit $tpe")
         else
