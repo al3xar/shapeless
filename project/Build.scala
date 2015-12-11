@@ -185,7 +185,7 @@ object ShapelessBuild extends Build {
 
   def commonSettings =
     Seq(
-      organization        := "com.chuusai",
+      organization        := "com.github.alexarchambault",
 
       scalaVersion        := "2.10.6",
 
