@@ -21,7 +21,7 @@ lazy val scoverageSettings = Seq(
 lazy val buildSettings = Seq(
   organization := "com.chuusai",
   scalaVersion := "2.11.8",
-  crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0-M5")
+  crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.0-RC1")
 )
 
 addCommandAlias("root", ";project root")
@@ -242,7 +242,7 @@ lazy val noPublishSettings = Seq(
 
 lazy val mimaSettings = mimaDefaultSettings ++ Seq(
   previousArtifacts := {
-    if(scalaVersion.value == "2.12.0-M5") Set()
+    if(scalaVersion.value == "2.12.0-RC1") Set()
     else {
       val previousVersion = "2.3.0"
       val previousSJSVersion = "0.6.7"
